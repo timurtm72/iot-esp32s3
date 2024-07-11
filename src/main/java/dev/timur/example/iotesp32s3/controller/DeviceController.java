@@ -1,5 +1,6 @@
 package dev.timur.example.iotesp32s3.controller;
 
+import dev.timur.example.iotesp32s3.dto.DeviceDto;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.serviceimpl.DeviceServiceImpl;
 import dev.timur.example.iotesp32s3.utils.Response;
@@ -21,28 +22,28 @@ public class DeviceController {
         this.deviceService = deviceService;
     }
     @GetMapping()
-    public ResponseEntity<List<Device>> getDevices(){
-        List<Device> devices = deviceService.getAll();
-        if(devices == null){
+    public ResponseEntity<List<DeviceDto>> getDevices(){
+        List<DeviceDto> devicesDto = deviceService.getAll();
+        if(devicesDto == null || devicesDto.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Список устройств пуст");
         }
-        return new ResponseEntity<>(devices, HttpStatus.OK);
+        return new ResponseEntity<>(devicesDto, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Device> getDevice(@PathVariable("id") Long id){
-        Device device = deviceService.getById(id);
-        if(device == null){
+    public ResponseEntity<DeviceDto> getDevice(@PathVariable("id") Long id){
+        DeviceDto deviceDto = deviceService.getById(id);
+        if(deviceDto == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Устройство с " + id + " не найдено");
         }
-        return new ResponseEntity<>(device, HttpStatus.OK);
+        return new ResponseEntity<>(deviceDto, HttpStatus.OK);
     }
 
     @PostMapping()
-    public ResponseEntity<Response> createDevice(@Valid @RequestBody Device device) {
-        if (deviceService.create(device)) {
+    public ResponseEntity<Response> createDevice(@Valid @RequestBody DeviceDto deviceDto) {
+        if (deviceService.create(deviceDto)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Ошибка в создании устройства");
         }
@@ -50,8 +51,8 @@ public class DeviceController {
     }
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateDevice(@PathVariable("id") Long id,
-                                                 @Valid @RequestBody Device device){
-        if(!deviceService.update(device,id)){
+                                                 @Valid @RequestBody DeviceDto deviceDto){
+        if(!deviceService.update(deviceDto,id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Устройство с идентификатором " + id + " не найдено");
         }

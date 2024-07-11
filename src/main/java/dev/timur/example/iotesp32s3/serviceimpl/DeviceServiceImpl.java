@@ -1,45 +1,59 @@
 package dev.timur.example.iotesp32s3.serviceimpl;
 
+import dev.timur.example.iotesp32s3.dto.DeviceDto;
+import dev.timur.example.iotesp32s3.mapper.DeviceMapper;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.repository.DeviceRepository;
 import dev.timur.example.iotesp32s3.service.DeviseService;
+import dev.timur.example.iotesp32s3.utils.MapperUtil;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 @Service
 public class DeviceServiceImpl implements DeviseService {
-    DeviceRepository deviceRepository;
-    @Transactional
-    @Override
-    public Device getById(Long id) {
-        return deviceRepository.findDevicesById(id).orElse(null);
+    private final DeviceRepository deviceRepository;
+    private final MapperUtil mapperUtil;
+    private final DeviceMapper deviceMapper;
+    @Autowired
+    public DeviceServiceImpl(DeviceRepository deviceRepository, MapperUtil mapperUtil, DeviceMapper deviceMapper) {
+        this.deviceRepository = deviceRepository;
+        this.mapperUtil = mapperUtil;
+        this.deviceMapper = deviceMapper;
     }
     @Transactional
     @Override
-    public List<Device> getAll() {
+    public DeviceDto getById(Long id) {
+        Device device =  deviceRepository.findDevicesById(id).orElse(null);
+        return  device != null ? deviceMapper.toDto(device) : null;
+    }
+    @Transactional
+    @Override
+    public List<DeviceDto> getAll() {
         List<Device> devices = deviceRepository.findAll();
         if (devices == null || devices.size() == 0) {
             return null;
         }
-        return devices;
+        return mapperUtil.mapList(devices, DeviceDto.class);
     }
     @Transactional
     @Override
-    public boolean create(Device device) {
-        if (device != null) {
-            Device newDevice = new Device();
-            newDevice.setName(device.getName());
-            newDevice.setDescription(device.getName());
-            if(device.getLedValues() == null) {
-                device.setLedValues(new ArrayList<>());
-                newDevice.setLedValues(device.getLedValues());
+    public boolean create(DeviceDto deviceDto) {
+        if (deviceDto != null) {
+            Device newDevice = deviceMapper.toEntity(deviceDto);
+            newDevice.setName(deviceDto.getName());
+            newDevice.setDescription(deviceDto.getName());
+            if(deviceDto.getLedValues() == null) {
+                deviceDto.setLedValues(new ArrayList<>());
+                newDevice.setLedValues(deviceDto.getLedValues());
             }
-            if(device.getInputValues() == null) {
-                device.setInputValues(new ArrayList<>());
-                newDevice.setInputValues(device.getInputValues());
+            if(deviceDto.getInputValues() == null) {
+                deviceDto.setInputValues(new ArrayList<>());
+                newDevice.setInputValues(deviceDto.getInputValues());
             }
+            deviceRepository.save(newDevice);
             return true;
         }else{
             return false;
@@ -47,11 +61,13 @@ public class DeviceServiceImpl implements DeviseService {
     }
     @Transactional
     @Override
-    public boolean update(Device device, Long id) {
-        if(device == null){
+    public boolean update(DeviceDto deviceDto, Long id) {
+        if(deviceDto == null){
             return false;
         }
-       Device updateDevice = deviceRepository.findDevicesById(id).orElse(null);
+        deviceDto.setId(id);
+        Device device = deviceMapper.toEntity(deviceDto);
+        Device updateDevice = deviceRepository.findDevicesById(id).orElse(null);
         if(updateDevice == null){
             return false;
         }
