@@ -55,10 +55,11 @@ public class DeviceServiceImpl implements DeviseService {
         if(updateDevice == null){
             return false;
         }
-       updateDevice.setName(device.getName());
-       updateDevice.setDescription(device.getDescription());
-       updateDevice.setInputValues(device.getInputValues());
-       updateDevice.setLedValues(device.getLedValues());
+        updateDevice.setName(device.getName());
+        updateDevice.setDescription(device.getDescription());
+        updateDevice.setInputValues(device.getInputValues());
+        updateDevice.setLedValues(device.getLedValues());
+        deviceRepository.save(updateDevice);
        return true;
     }
     @Transactional

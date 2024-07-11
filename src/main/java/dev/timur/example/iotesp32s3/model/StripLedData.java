@@ -4,6 +4,7 @@ import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,10 +13,10 @@ import java.time.LocalDateTime;
 @ToString
 @Embeddable
 public class StripLedData {
-    int index;
-    int redColor;
-    int greenColor;
-    int blueColor;
+    Integer index;
+    Integer redColor;
+    Integer greenColor;
+    Integer blueColor;
     private LocalDateTime timestamp;
 }
 
