@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>dev.timur.example</groupId>
-    <artifactId>iot-esp32s3</artifactId>
+    <artifactId>iot-java-esp32s3</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>iot-esp32s3</name>
     <description>iot-esp32s3</description>
