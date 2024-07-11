@@ -1,6 +1,7 @@
 package dev.timur.example.iotesp32s3.serviceimpl;
 
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
+import dev.timur.example.iotesp32s3.enums.Status;
 import dev.timur.example.iotesp32s3.mapper.DeviceMapper;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.repository.DeviceRepository;
@@ -40,7 +41,7 @@ public class DeviceServiceImpl implements DeviseService {
     }
     @Transactional
     @Override
-    public boolean create(DeviceDto deviceDto) {
+    public Status create(DeviceDto deviceDto) {
         if (deviceDto != null) {
             Device newDevice = deviceMapper.toEntity(deviceDto);
             newDevice.setName(deviceDto.getName());
@@ -54,38 +55,38 @@ public class DeviceServiceImpl implements DeviseService {
                 newDevice.setInputValues(deviceDto.getInputValues());
             }
             deviceRepository.save(newDevice);
-            return true;
+            return Status.IS_OK;
         }else{
-            return false;
+            return Status.IS_EMPTY;
         }
     }
     @Transactional
     @Override
-    public boolean update(DeviceDto deviceDto, Long id) {
+    public Status update(DeviceDto deviceDto, Long id) {
         if(deviceDto == null){
-            return false;
+            return Status.IS_EMPTY;
         }
         deviceDto.setId(id);
         Device device = deviceMapper.toEntity(deviceDto);
         Device updateDevice = deviceRepository.findDevicesById(id).orElse(null);
         if(updateDevice == null){
-            return false;
+            return Status.IS_NOT_FOUND;
         }
         updateDevice.setName(device.getName());
         updateDevice.setDescription(device.getDescription());
         updateDevice.setInputValues(device.getInputValues());
         updateDevice.setLedValues(device.getLedValues());
         deviceRepository.save(updateDevice);
-       return true;
+        return Status.IS_OK;
     }
     @Transactional
     @Override
-    public boolean delete(Long id) {
+    public Status delete(Long id) {
         Device removeDevice = deviceRepository.findDevicesById(id).orElse(null);
         if(removeDevice == null){
-            return false;
+            return Status.IS_NULL;
         }
         deviceRepository.deleteById(id);
-        return true;
+        return Status.IS_OK;
     }
 }

@@ -1,7 +1,7 @@
 package dev.timur.example.iotesp32s3.controller;
 
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
-import dev.timur.example.iotesp32s3.model.Device;
+import dev.timur.example.iotesp32s3.enums.Status;
 import dev.timur.example.iotesp32s3.serviceimpl.DeviceServiceImpl;
 import dev.timur.example.iotesp32s3.utils.Response;
 import jakarta.validation.Valid;
@@ -43,16 +43,20 @@ public class DeviceController {
 
     @PostMapping()
     public ResponseEntity<Response> createDevice(@Valid @RequestBody DeviceDto deviceDto) {
-        if (deviceService.create(deviceDto)) {
+        if (deviceService.create(deviceDto) == Status.IS_EMPTY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ошибка в создании устройства");
+                    "Ошибка в создании устройства. Введите правильные данные.");
         }
         return ResponseEntity.accepted().body(new Response("Создание устройства прошло успешно", LocalDateTime.now()));
     }
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateDevice(@PathVariable("id") Long id,
                                                  @Valid @RequestBody DeviceDto deviceDto){
-        if(!deviceService.update(deviceDto,id)){
+        if(deviceService.update(deviceDto,id) == Status.IS_EMPTY){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Введите правильные данные");
+        }
+        if(deviceService.update(deviceDto,id) == Status.IS_NOT_FOUND){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Устройство с идентификатором " + id + " не найдено");
         }
@@ -60,9 +64,9 @@ public class DeviceController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteDevice(@PathVariable("id") Long id) {
-        if(!deviceService.delete(id)){
+        if(deviceService.delete(id) == Status.IS_NULL){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Неверно заданный id для удаления");
+                    "Устройство с идентификатором " + id + " не найдено для удаления");
         }
         return ResponseEntity.accepted().body(new Response("Удаление устройства прошло успешно", LocalDateTime.now()));
     }
