@@ -27,17 +27,15 @@ public class Device {
     private String description;
     @Column(name="created_at",nullable = false)
     private LocalDateTime createdAt;
-    @Column(name="removed_at",nullable = false)
+    @Column(name="removed_at")
     private LocalDateTime removedAt;
-    @Column(name="modified_at",nullable = false)
+    @Column(name="modified_at")
     private LocalDateTime modifiedAt;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "input_values", joinColumns = @JoinColumn(name = "input_values_id"))
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BitDeviceData> inputValues;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "led_values", joinColumns = @JoinColumn(name = "led_values_id"))
+    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<StripLedData> ledValues;
 
     @Column(name = "is_removed", nullable = false)

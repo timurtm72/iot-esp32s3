@@ -1,6 +1,8 @@
 package dev.timur.example.iotesp32s3.mapper;
 
+import dev.timur.example.iotesp32s3.dto.BitDeviceDataDto;
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
+import dev.timur.example.iotesp32s3.dto.StripLedDataDto;
 import dev.timur.example.iotesp32s3.model.BitDeviceData;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.model.StripLedData;

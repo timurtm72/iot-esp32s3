@@ -18,7 +18,6 @@ import java.util.List;
 @ToString
 public class DeviceDto {
     private Long id;
-    @NotNull(message = "Название устройства не может быть null")
     @NotBlank(message = "Название устройства не может быть пустым")
     private String name;
     private String description;
