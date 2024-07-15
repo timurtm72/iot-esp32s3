@@ -2,10 +2,10 @@ package dev.timur.example.iotesp32s3.mapper;
 
 import dev.timur.example.iotesp32s3.dto.BitDeviceDataDto;
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
-import dev.timur.example.iotesp32s3.dto.StripLedDataDto;
+import dev.timur.example.iotesp32s3.dto.StripLedDeviceDataDto;
 import dev.timur.example.iotesp32s3.model.BitDeviceData;
 import dev.timur.example.iotesp32s3.model.Device;
-import dev.timur.example.iotesp32s3.model.StripLedData;
+import dev.timur.example.iotesp32s3.model.StripLedDeviceData;
 import dev.timur.example.iotesp32s3.utils.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,10 +23,10 @@ public class DeviceMapper implements IMapper<Device, DeviceDto> {
     public DeviceDto toDto(Device device) {
         DeviceDto deviceDto = mapperUtil.getMapper().map(device, DeviceDto.class);
         deviceDto.setInputValues(
-                mapperUtil.mapList(device.getInputValues(), BitDeviceData.class)
+                mapperUtil.mapList(device.getInputValues(), BitDeviceDataDto.class)
         );
         deviceDto.setLedValues(
-                mapperUtil.mapList(device.getLedValues(), StripLedData.class)
+                mapperUtil.mapList(device.getLedValues(), StripLedDeviceDataDto.class)
         );
         return deviceDto;
     }
@@ -38,7 +38,7 @@ public class DeviceMapper implements IMapper<Device, DeviceDto> {
                 mapperUtil.mapList(deviceDto.getInputValues(), BitDeviceData.class)
         );
         device.setLedValues(
-                mapperUtil.mapList(deviceDto.getLedValues(), StripLedData.class)
+                mapperUtil.mapList(deviceDto.getLedValues(), StripLedDeviceData.class)
         );
         return device;
     }

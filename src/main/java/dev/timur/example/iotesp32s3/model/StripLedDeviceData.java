@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "strip_led_data")
 @SQLDelete(sql = "UPDATE relay SET is_removed = true WHERE id = ?")
 @Where(clause = "is_removed=false")
-public class StripLedData {
+public class StripLedDeviceData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id",nullable = false)

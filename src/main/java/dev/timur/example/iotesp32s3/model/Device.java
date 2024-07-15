@@ -32,11 +32,13 @@ public class Device {
     @Column(name="modified_at")
     private LocalDateTime modifiedAt;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
+    @JoinColumn(name = "device_id")
     private List<BitDeviceData> inputValues;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<StripLedData> ledValues;
+    @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
+    @JoinColumn(name = "device_id")
+    private List<StripLedDeviceData> ledValues;
 
     @Column(name = "is_removed", nullable = false)
     private boolean isRemoved = Boolean.FALSE;
