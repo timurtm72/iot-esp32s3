@@ -2,7 +2,6 @@ package dev.timur.example.iotesp32s3.controller;
 
 import dev.timur.example.iotesp32s3.dto.StripLedDeviceDataDto;
 import dev.timur.example.iotesp32s3.enums.Status;
-import dev.timur.example.iotesp32s3.model.StripLedDeviceData;
 import dev.timur.example.iotesp32s3.service.StripLedDeviceDataService;
 import dev.timur.example.iotesp32s3.utils.Response;
 import jakarta.validation.Valid;
