@@ -2,6 +2,7 @@ package dev.timur.example.iotesp32s3.controller;
 
 import dev.timur.example.iotesp32s3.dto.StripLedDeviceDataDto;
 import dev.timur.example.iotesp32s3.enums.Status;
+import dev.timur.example.iotesp32s3.model.StripLedDeviceData;
 import dev.timur.example.iotesp32s3.service.StripLedDeviceDataService;
 import dev.timur.example.iotesp32s3.utils.Response;
 import jakarta.validation.Valid;
@@ -14,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 @RestController
-@RequestMapping("/bit_device")
+@RequestMapping("/led_device")
 public class StripLedDeviceDataController {
     private final StripLedDeviceDataService stripLedDeviceDataService;
     @Autowired
@@ -27,38 +28,38 @@ public class StripLedDeviceDataController {
         List<StripLedDeviceDataDto> stripLedDevicesDataDto = stripLedDeviceDataService.getAll();
         if(stripLedDevicesDataDto == null ||stripLedDevicesDataDto.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Список светодиодов устройства пуст");
+                    "Список каналов светодиодов устройства пуст");
         }
         return new ResponseEntity<>(stripLedDevicesDataDto, HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<BitDeviceDataDto> getBitDeviceData(@PathVariable("id") Long id){
-        BitDeviceDataDto bitDeviceDataDto = bitDeviceDataService.getById(id);
-        if(bitDeviceDataDto == null){
+    public ResponseEntity<StripLedDeviceDataDto> getStripLedDeviceData(@PathVariable("id") Long id){
+        StripLedDeviceDataDto stripLedDeviceDataDto = stripLedDeviceDataService.getById(id);
+        if(stripLedDeviceDataDto == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Вход устройства пуст");
+                    "Светодиодные каналы устройства отсутствуют");
         }
-        return new ResponseEntity<>(bitDeviceDataDto, HttpStatus.OK);
+        return new ResponseEntity<>(stripLedDeviceDataDto, HttpStatus.OK);
     }
-    @PostMapping("/add_bit_input_data/{id}")
-    public ResponseEntity<Response> createBitDeviceData(@Valid @RequestBody BitDeviceDataDto bitDeviceDataDto, @PathVariable("id") Long id) {
-        Status status = bitDeviceDataService.create(bitDeviceDataDto,id);
+    @PostMapping("/add_strip_led_data/{id}")
+    public ResponseEntity<Response> createStripLedDeviceData(@Valid @RequestBody StripLedDeviceDataDto stripLedDeviceDataDto, @PathVariable("id") Long id) {
+        Status status =stripLedDeviceDataService.create(stripLedDeviceDataDto,id);
         if ( status == Status.IS_EMPTY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ошибка в создании входа устройства. Введите правильные данные.");
+                    "Ошибка в создании каналов светодиодов устройства. Введите правильные данные.");
         } else if (status == Status.IS_NOT_FOUND) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Не найдено устройство по введеному deviceId");
+                    "Не найдено каналы светодиодов по введеному deviceId");
 
         }
-        return ResponseEntity.accepted().body(new Response("Создание входа устройства прошло успешно", LocalDateTime.now()));
+        return ResponseEntity.accepted().body(new Response("Создание каналов светодиодов устройства прошло успешно", LocalDateTime.now()));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response> deleteBitDataDevice(@PathVariable("id") Long id) {
-        if(bitDeviceDataService.delete(id) == Status.IS_NULL){
+    public ResponseEntity<Response> deleteStripLedDataDevice(@PathVariable("id") Long id) {
+        if(stripLedDeviceDataService.delete(id) == Status.IS_NULL){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Вход устройства с идентификатором " + id + " не найдено для удаления");
+                    "Каналы светодиодов устройства с идентификатором " + id + " не найдено для удаления");
         }
-        return ResponseEntity.accepted().body(new Response("Удаление входа устройства прошло успешно", LocalDateTime.now()));
+        return ResponseEntity.accepted().body(new Response("Удаление каналов светодиодов устройства прошло успешно", LocalDateTime.now()));
     }
 }
