@@ -17,17 +17,30 @@ import java.time.LocalDateTime;
 @Table(name = "bit_device_data")
 @SQLDelete(sql = "UPDATE relay SET is_removed = true WHERE id = ?")
 @Where(clause = "is_removed=false")
-public class BitDeviceData {
+public class DeviceData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id",nullable = false)
     private Long id;
-    @Column(name="value",nullable = false)
-    private Boolean value = false;
+
+    @Column(name="input_value",nullable = false)
+    private Short inputValue = 0;
+
+    @Column(name="output_value",nullable = false)
+    private Short outputValue = 0;
+
+    @Column(name="humidity",nullable = false)
+    private Float humidity = 0.0F;
+
+    @Column(name="temperature",nullable = false)
+    private Float temperature = 0.0F;
+
     @Column(name="timestamp",nullable = false)
     private LocalDateTime timestamp;
+
     @Column(name = "is_removed", nullable = false)
     private boolean isRemoved = Boolean.FALSE;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "device_id")
     private Device device;

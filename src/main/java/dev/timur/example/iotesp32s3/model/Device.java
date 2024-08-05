@@ -25,6 +25,8 @@ public class Device {
     private String name;
     @Column(name="description")
     private String description;
+    @Column(name="location")
+    private String location;
     @Column(name="created_at",nullable = false)
     private LocalDateTime createdAt;
     @Column(name="removed_at")
@@ -34,7 +36,7 @@ public class Device {
 
     @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
     @JoinColumn(name = "device_id")
-    private List<BitDeviceData> inputValues;
+    private List<DeviceData> dataValues;
 
     @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
     @JoinColumn(name = "device_id")

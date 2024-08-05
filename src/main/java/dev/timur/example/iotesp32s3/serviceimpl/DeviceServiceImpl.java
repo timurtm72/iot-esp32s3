@@ -5,7 +5,7 @@ import dev.timur.example.iotesp32s3.dto.DeviceDto;
 import dev.timur.example.iotesp32s3.enums.Status;
 import dev.timur.example.iotesp32s3.mapper.DeviceMapper;
 import dev.timur.example.iotesp32s3.model.Device;
-import dev.timur.example.iotesp32s3.repository.BitDeviceDataRepository;
+import dev.timur.example.iotesp32s3.repository.DeviceDataRepository;
 import dev.timur.example.iotesp32s3.repository.DeviceRepository;
 import dev.timur.example.iotesp32s3.repository.StripLedDeviceDataRepository;
 import dev.timur.example.iotesp32s3.service.DeviseService;
@@ -21,9 +21,9 @@ public class DeviceServiceImpl implements DeviseService {
     private final MapperUtil mapperUtil;
     private final DeviceMapper deviceMapper;
     private final StripLedDeviceDataRepository stripLedDataRepository;
-    private final BitDeviceDataRepository bitDeviceRepository;
+    private final DeviceDataRepository bitDeviceRepository;
     @Autowired
-    public DeviceServiceImpl(DeviceRepository deviceRepository, MapperUtil mapperUtil, DeviceMapper deviceMapper, StripLedDeviceDataRepository stripLedDataRepository, BitDeviceDataRepository bitDeviceRepository) {
+    public DeviceServiceImpl(DeviceRepository deviceRepository, MapperUtil mapperUtil, DeviceMapper deviceMapper, StripLedDeviceDataRepository stripLedDataRepository, DeviceDataRepository bitDeviceRepository) {
         this.deviceRepository = deviceRepository;
         this.mapperUtil = mapperUtil;
         this.deviceMapper = deviceMapper;
@@ -52,7 +52,7 @@ public class DeviceServiceImpl implements DeviseService {
             return Status.IS_EMPTY;
         }
         Device newDevice = deviceMapper.toEntity(deviceDto);
-        newDevice.setInputValues(null);
+        newDevice.setDataValues(null);
         newDevice.setLedValues(null);
         deviceRepository.save(newDevice);
         return Status.IS_OK;
@@ -80,8 +80,8 @@ public class DeviceServiceImpl implements DeviseService {
         if(device.getLedValues() != null && !device.getLedValues().isEmpty()){
             updateDevice.setLedValues(device.getLedValues());
         }
-        if(device.getInputValues() != null && !device.getInputValues().isEmpty()){
-            updateDevice.setInputValues(device.getInputValues());
+        if(device.getDataValues() != null && !device.getDataValues().isEmpty()){
+            updateDevice.setDataValues(device.getDataValues());
         }
 
         deviceRepository.save(updateDevice);

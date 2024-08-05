@@ -42,7 +42,7 @@ public class StripLedDeviceDataController {
     }
     @PostMapping("/add_strip_led_data/{id}")
     public ResponseEntity<Response> createStripLedDeviceData(@Valid @RequestBody StripLedDeviceDataDto stripLedDeviceDataDto, @PathVariable("id") Long id) {
-        Status status =stripLedDeviceDataService.create(stripLedDeviceDataDto,id);
+        Status status = stripLedDeviceDataService.create(stripLedDeviceDataDto,id);
         if ( status == Status.IS_EMPTY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Ошибка в создании каналов светодиодов устройства. Введите правильные данные.");

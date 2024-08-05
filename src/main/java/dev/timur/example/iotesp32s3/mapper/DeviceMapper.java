@@ -1,9 +1,9 @@
 package dev.timur.example.iotesp32s3.mapper;
 
-import dev.timur.example.iotesp32s3.dto.BitDeviceDataDto;
+import dev.timur.example.iotesp32s3.dto.DeviceDataDto;
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
 import dev.timur.example.iotesp32s3.dto.StripLedDeviceDataDto;
-import dev.timur.example.iotesp32s3.model.BitDeviceData;
+import dev.timur.example.iotesp32s3.model.DeviceData;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.model.StripLedDeviceData;
 import dev.timur.example.iotesp32s3.utils.MapperUtil;
@@ -22,8 +22,8 @@ public class DeviceMapper implements IMapper<Device, DeviceDto> {
     @Override
     public DeviceDto toDto(Device device) {
         DeviceDto deviceDto = mapperUtil.getMapper().map(device, DeviceDto.class);
-        deviceDto.setInputValues(
-                mapperUtil.mapList(device.getInputValues(), BitDeviceDataDto.class)
+        deviceDto.setDataValues(
+                mapperUtil.mapList(device.getDataValues(), DeviceDataDto.class)
         );
         deviceDto.setLedValues(
                 mapperUtil.mapList(device.getLedValues(), StripLedDeviceDataDto.class)
@@ -34,8 +34,8 @@ public class DeviceMapper implements IMapper<Device, DeviceDto> {
     @Override
     public Device toEntity(DeviceDto deviceDto) {
         Device device = mapperUtil.getMapper().map(deviceDto, Device.class);
-        device.setInputValues(
-                mapperUtil.mapList(deviceDto.getInputValues(), BitDeviceData.class)
+        device.setDataValues(
+                mapperUtil.mapList(deviceDto.getDataValues(), DeviceData.class)
         );
         device.setLedValues(
                 mapperUtil.mapList(deviceDto.getLedValues(), StripLedDeviceData.class)

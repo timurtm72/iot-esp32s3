@@ -1,7 +1,5 @@
 package dev.timur.example.iotesp32s3.utils;
 
-import dev.timur.example.iotesp32s3.dto.DeviceDto;
-import dev.timur.example.iotesp32s3.model.BitDeviceData;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

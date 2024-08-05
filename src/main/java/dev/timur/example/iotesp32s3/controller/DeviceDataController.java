@@ -1,8 +1,8 @@
 package dev.timur.example.iotesp32s3.controller;
 
-import dev.timur.example.iotesp32s3.dto.BitDeviceDataDto;
+import dev.timur.example.iotesp32s3.dto.DeviceDataDto;
 import dev.timur.example.iotesp32s3.enums.Status;
-import dev.timur.example.iotesp32s3.service.BitDeviceDataService;
+import dev.timur.example.iotesp32s3.service.DeviceDataService;
 import dev.timur.example.iotesp32s3.utils.Response;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +16,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bit_device")
-public class BitDeviceDataController {
-    private final BitDeviceDataService bitDeviceDataService;
+public class DeviceDataController {
+    private final DeviceDataService deviceDataService;
     @Autowired
-    public BitDeviceDataController(BitDeviceDataService bitDeviceDataService) {
-        this.bitDeviceDataService = bitDeviceDataService;
+    public DeviceDataController(DeviceDataService deviceDataService) {
+        this.deviceDataService = deviceDataService;
     }
 
     @GetMapping()
-    public ResponseEntity<List<BitDeviceDataDto>> getBitDevicesData(){
-        List<BitDeviceDataDto> bitDevicesDataDto = bitDeviceDataService.getAll();
+    public ResponseEntity<List<DeviceDataDto>> getBitDevicesData(){
+        List<DeviceDataDto> bitDevicesDataDto = deviceDataService.getAll();
         if(bitDevicesDataDto == null ||bitDevicesDataDto.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Список входа устройств пуст");
@@ -33,17 +33,17 @@ public class BitDeviceDataController {
         return new ResponseEntity<>(bitDevicesDataDto, HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<BitDeviceDataDto> getBitDeviceData(@PathVariable("id") Long id){
-        BitDeviceDataDto bitDeviceDataDto = bitDeviceDataService.getById(id);
-        if(bitDeviceDataDto == null){
+    public ResponseEntity<DeviceDataDto> getBitDeviceData(@PathVariable("id") Long id){
+        DeviceDataDto deviceDataDto = deviceDataService.getById(id);
+        if(deviceDataDto == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Вход устройства пуст");
         }
-        return new ResponseEntity<>(bitDeviceDataDto, HttpStatus.OK);
+        return new ResponseEntity<>(deviceDataDto, HttpStatus.OK);
     }
     @PostMapping("/add_bit_input_data/{id}")
-    public ResponseEntity<Response> createBitDeviceData(@Valid @RequestBody BitDeviceDataDto bitDeviceDataDto, @PathVariable("id") Long id) {
-        Status status = bitDeviceDataService.create(bitDeviceDataDto,id);
+    public ResponseEntity<Response> createBitDeviceData(@Valid @RequestBody DeviceDataDto deviceDataDto, @PathVariable("id") Long id) {
+        Status status = deviceDataService.create(deviceDataDto,id);
         if ( status == Status.IS_EMPTY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Ошибка в создании входа устройства. Введите правильные данные.");
@@ -56,7 +56,7 @@ public class BitDeviceDataController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteBitDataDevice(@PathVariable("id") Long id) {
-        if(bitDeviceDataService.delete(id) == Status.IS_NULL){
+        if(deviceDataService.delete(id) == Status.IS_NULL){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Вход устройства с идентификатором " + id + " не найдено для удаления");
         }
