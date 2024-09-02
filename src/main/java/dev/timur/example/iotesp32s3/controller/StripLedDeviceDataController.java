@@ -51,7 +51,7 @@ public class StripLedDeviceDataController {
                     "Не найдено каналы светодиодов по введеному deviceId");
 
         }
-        return ResponseEntity.accepted().body(new Response("Создание каналов светодиодов устройства прошло успешно", LocalDateTime.now()));
+        return ResponseEntity.accepted().body(new Response("Обновление каналов светодиодов устройства прошло успешно", LocalDateTime.now()));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteStripLedDataDevice(@PathVariable("id") Long id) {

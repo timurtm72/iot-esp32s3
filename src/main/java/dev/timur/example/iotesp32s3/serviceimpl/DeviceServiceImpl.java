@@ -10,7 +10,7 @@ import dev.timur.example.iotesp32s3.repository.DeviceRepository;
 import dev.timur.example.iotesp32s3.repository.StripLedDeviceDataRepository;
 import dev.timur.example.iotesp32s3.service.DeviseService;
 import dev.timur.example.iotesp32s3.utils.MapperUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

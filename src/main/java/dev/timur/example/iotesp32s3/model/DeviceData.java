@@ -23,6 +23,9 @@ public class DeviceData {
     @Column(name="id",nullable = false)
     private Long id;
 
+    @Column(name="mode",nullable = false)
+    private Boolean mode = false;
+
     @Column(name="input_value",nullable = false)
     private Short inputValue = 0;
 

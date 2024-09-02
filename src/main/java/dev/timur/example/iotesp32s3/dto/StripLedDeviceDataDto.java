@@ -21,5 +21,4 @@ public class StripLedDeviceDataDto {
     private Integer greenColor;
     @NotNull(message = "Значение цвета синего светодиода не может быть null")
     private Integer blueColor;
-    private LocalDateTime timestamp;
 }

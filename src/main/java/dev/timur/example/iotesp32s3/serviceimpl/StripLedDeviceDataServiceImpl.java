@@ -11,6 +11,7 @@ import dev.timur.example.iotesp32s3.service.StripLedDeviceDataService;
 import dev.timur.example.iotesp32s3.utils.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 @Service
@@ -27,13 +28,13 @@ public class StripLedDeviceDataServiceImpl implements StripLedDeviceDataService 
         this.mapperUtil = mapperUtil;
         this.deviceRepository = deviceRepository;
     }
-
+    @Transactional
     @Override
     public StripLedDeviceDataDto getById(Long id) {
         StripLedDeviceData stripLedData = stripLedDataRepository.getStripLedDataById(id);
         return stripLedData != null ? stripLedDataMapper.toDto(stripLedData) : null;
     }
-
+    @Transactional
     @Override
     public List<StripLedDeviceDataDto> getAll() {
         List<StripLedDeviceData> stripLedData = stripLedDataRepository.findAll();
@@ -42,7 +43,7 @@ public class StripLedDeviceDataServiceImpl implements StripLedDeviceDataService 
         }
         return mapperUtil.mapList(stripLedData, StripLedDeviceDataDto.class);
     }
-
+    @Transactional
     @Override
     public Status create(StripLedDeviceDataDto stripLedDataDto, Long deviceId) {
         if(stripLedDataDto == null){
@@ -57,12 +58,12 @@ public class StripLedDeviceDataServiceImpl implements StripLedDeviceDataService 
        stripLedDataRepository.save(stripLedData);
         return Status.IS_OK;
     }
-
+    @Transactional
     @Override
     public Status update(StripLedDeviceDataDto stripLedDataDto, Long id) {
         return Status.IS_OK;
     }
-
+    @Transactional
     @Override
     public Status delete(Long id) {
        StripLedDeviceData stripLedDataRemove = stripLedDataRepository.getStripLedDataById(id);

@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @ToString
 public class DeviceDataDto {
     private Long id;
+
+    private Boolean mode = false;
+
     @NotNull(message = "Значение входов устройства не может быть null")
     private Short inputValue = 0;
 
@@ -26,5 +29,5 @@ public class DeviceDataDto {
     @NotNull(message = "Значение влажности не может быть null")
     private Float temperature = 0.0F;
 
-    private LocalDateTime timestamp;
+//    private LocalDateTime timestamp;
 }
