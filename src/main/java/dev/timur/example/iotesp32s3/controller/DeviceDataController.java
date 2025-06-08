@@ -4,62 +4,106 @@ import dev.timur.example.iotesp32s3.dto.DeviceDataDto;
 import dev.timur.example.iotesp32s3.enums.Status;
 import dev.timur.example.iotesp32s3.service.DeviceDataService;
 import dev.timur.example.iotesp32s3.utils.Response;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/bit_device")
+@RequestMapping("/api/device-data")
+@CrossOrigin
 public class DeviceDataController {
     private final DeviceDataService deviceDataService;
+
     @Autowired
     public DeviceDataController(DeviceDataService deviceDataService) {
         this.deviceDataService = deviceDataService;
     }
 
-    @GetMapping()
-    public ResponseEntity<List<DeviceDataDto>> getBitDevicesData(){
-        List<DeviceDataDto> bitDevicesDataDto = deviceDataService.getAll();
-        if(bitDevicesDataDto == null ||bitDevicesDataDto.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Список входа устройств пуст");
-        }
-        return new ResponseEntity<>(bitDevicesDataDto, HttpStatus.OK);
-    }
     @GetMapping("/{id}")
-    public ResponseEntity<DeviceDataDto> getBitDeviceData(@PathVariable("id") Long id){
+    public ResponseEntity<Response<DeviceDataDto>> getDeviceDataById(@PathVariable Long id) {
         DeviceDataDto deviceDataDto = deviceDataService.getById(id);
-        if(deviceDataDto == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Вход устройства пуст");
+        if (deviceDataDto != null) {
+            return ResponseEntity.ok(new Response<>(deviceDataDto, Status.IS_OK));
         }
-        return new ResponseEntity<>(deviceDataDto, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
     }
-    @PostMapping("/add_bit_input_data/{id}")
-    public ResponseEntity<Response> createBitDeviceData(@Valid @RequestBody DeviceDataDto deviceDataDto, @PathVariable("id") Long id) {
-        Status status = deviceDataService.create(deviceDataDto,id);
-        if ( status == Status.IS_EMPTY) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ошибка в создании входа устройства. Введите правильные данные.");
-        } else if (status == Status.IS_NOT_FOUND) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Не найдено устройство по введеному deviceId");
 
+    @GetMapping
+    public ResponseEntity<Response<List<DeviceDataDto>>> getAllDeviceData() {
+        List<DeviceDataDto> deviceDataList = deviceDataService.getAll();
+        if (deviceDataList != null && !deviceDataList.isEmpty()) {
+            return ResponseEntity.ok(new Response<>(deviceDataList, Status.IS_OK));
         }
-        return ResponseEntity.accepted().body(new Response("Создание входа устройства прошло успешно", LocalDateTime.now()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
     }
+
+    @PostMapping("/device/{deviceId}")
+    public ResponseEntity<Response<String>> createDeviceData(@RequestBody DeviceDataDto deviceDataDto, @PathVariable Long deviceId) {
+        Status status = deviceDataService.create(deviceDataDto, deviceId);
+        if (status == Status.IS_OK) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new Response<>("Данные устройства созданы успешно", status));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response<>("Ошибка создания данных устройства", status));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Response<String>> updateDeviceData(@RequestBody DeviceDataDto deviceDataDto, @PathVariable Long id) {
+        Status status = deviceDataService.update(deviceDataDto, id);
+        if (status == Status.IS_OK) {
+            return ResponseEntity.ok(new Response<>("Данные устройства обновлены успешно", status));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response<>("Ошибка обновления данных устройства", status));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response> deleteBitDataDevice(@PathVariable("id") Long id) {
-        if(deviceDataService.delete(id) == Status.IS_NULL){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Вход устройства с идентификатором " + id + " не найдено для удаления");
+    public ResponseEntity<Response<String>> deleteDeviceData(@PathVariable Long id) {
+        Status status = deviceDataService.delete(id);
+        if (status == Status.IS_OK) {
+            return ResponseEntity.ok(new Response<>("Данные устройства удалены успешно", status));
         }
-        return ResponseEntity.accepted().body(new Response("Удаление входа устройства прошло успешно", LocalDateTime.now()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>("Данные устройства не найдены", status));
     }
-}
+
+    @GetMapping("/device/{deviceId}")
+    public ResponseEntity<Response<List<DeviceDataDto>>> getDeviceDataByDeviceId(@PathVariable Long deviceId) {
+        List<DeviceDataDto> deviceDataList = deviceDataService.findByDeviceId(deviceId);
+        if (deviceDataList != null && !deviceDataList.isEmpty()) {
+            return ResponseEntity.ok(new Response<>(deviceDataList, Status.IS_OK));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
+    }
+
+    @GetMapping("/device/{deviceId}/latest")
+    public ResponseEntity<Response<DeviceDataDto>> getLatestDeviceData(@PathVariable Long deviceId) {
+        DeviceDataDto deviceDataDto = deviceDataService.findLatestByDeviceId(deviceId);
+        if (deviceDataDto != null) {
+            return ResponseEntity.ok(new Response<>(deviceDataDto, Status.IS_OK));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
+    }
+
+    @GetMapping("/period")
+    public ResponseEntity<Response<List<DeviceDataDto>>> getDeviceDataByPeriod(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        List<DeviceDataDto> deviceDataList = deviceDataService.findByTimestampBetween(start, end);
+        if (deviceDataList != null && !deviceDataList.isEmpty()) {
+            return ResponseEntity.ok(new Response<>(deviceDataList, Status.IS_OK));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
+    }
+} 

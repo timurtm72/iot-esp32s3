@@ -1,8 +1,7 @@
 package dev.timur.example.iotesp32s3.model;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,8 +13,6 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "device")
-@SQLDelete(sql = "UPDATE relay SET is_removed = true WHERE id = ?")
-@Where(clause = "is_removed=false")
 public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +22,7 @@ public class Device {
     private String name;
     @Column(name="description")
     private String description;
-    @Column(name="location")
+    @Column(name="location", length = 500)
     private String location;
     @Column(name="created_at",nullable = false)
     private LocalDateTime createdAt;
@@ -37,14 +34,7 @@ public class Device {
     @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
     @JoinColumn(name = "device_id")
     private List<DeviceData> dataValues;
-
-    @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.EAGER)
-    @JoinColumn(name = "device_id")
-    private List<StripLedDeviceData> ledValues;
-
-    @Column(name = "is_removed", nullable = false)
-    private boolean isRemoved = Boolean.FALSE;
-
+    
     @PrePersist
     public void toCreate() {
         this.createdAt = LocalDateTime.now();
@@ -59,5 +49,4 @@ public class Device {
     public void toRemove() {
         this.removedAt = LocalDateTime.now();
     }
-
 }
