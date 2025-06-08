@@ -4,6 +4,7 @@ import dev.timur.example.iotesp32s3.enums.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO для передачи данных пользователя в системе IoT.
@@ -56,5 +57,8 @@ public class UserDto {
     
     /** Дата и время последнего входа в систему */
     private LocalDateTime lastLogin;
+    
+    /** Список идентификаторов устройств, принадлежащих пользователю */
+    private List<Long> deviceIds;
     // Пароль не включаем в DTO для безопасности
 } 

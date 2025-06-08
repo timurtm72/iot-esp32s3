@@ -3,6 +3,7 @@ package dev.timur.example.iotesp32s3.mapper;
 import dev.timur.example.iotesp32s3.dto.DeviceDto;
 import dev.timur.example.iotesp32s3.model.Device;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * MapStruct маппер для преобразования между моделью Device и соответствующими DTO.
@@ -26,6 +27,7 @@ public interface DeviceMapper {
      * @param device модель устройства из базы данных
      * @return DeviceDto с полными данными устройства
      */
+    @Mapping(source = "owner.id", target = "ownerId")
     DeviceDto toDto(Device device);
     
     /**
@@ -35,5 +37,6 @@ public interface DeviceMapper {
      * @param deviceDto DTO с данными устройства
      * @return модель Device для работы с базой данных
      */
+    @Mapping(source = "ownerId", target = "owner.id")
     Device toEntity(DeviceDto deviceDto);
 } 

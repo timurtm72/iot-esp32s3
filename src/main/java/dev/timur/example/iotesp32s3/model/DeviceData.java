@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @Entity
-@Table(name = "bit_device_data")
+@Table(name = "device_data")
 public class DeviceData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

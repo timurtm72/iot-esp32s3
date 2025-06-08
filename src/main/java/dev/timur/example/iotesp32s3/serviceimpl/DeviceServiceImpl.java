@@ -5,8 +5,10 @@ import dev.timur.example.iotesp32s3.enums.Status;
 import dev.timur.example.iotesp32s3.mapper.DeviceMapper;
 import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.repository.DeviceRepository;
+import dev.timur.example.iotesp32s3.repository.UserRepository;
 import dev.timur.example.iotesp32s3.service.DeviceService;
 import dev.timur.example.iotesp32s3.specification.DeviceSpecification;
+import dev.timur.example.iotesp32s3.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,17 +41,22 @@ public class DeviceServiceImpl implements DeviceService {
     
     /** Маппер для преобразования между DTO и Entity */
     private final DeviceMapper deviceMapper;
+    
+    /** Репозиторий для работы с пользователями */
+    private final UserRepository userRepository;
 
     /**
      * Конструктор сервиса с внедрением зависимостей.
      * 
      * @param deviceRepository репозиторий для работы с устройствами
      * @param deviceMapper маппер для преобразования объектов
+     * @param userRepository репозиторий для работы с пользователями
      */
     @Autowired
-    public DeviceServiceImpl(DeviceRepository deviceRepository, DeviceMapper deviceMapper) {
+    public DeviceServiceImpl(DeviceRepository deviceRepository, DeviceMapper deviceMapper, UserRepository userRepository) {
         this.deviceRepository = deviceRepository;
         this.deviceMapper = deviceMapper;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -86,16 +93,24 @@ public class DeviceServiceImpl implements DeviceService {
      * {@inheritDoc}
      * 
      * Выполняется в транзакции и очищает связанные кеши.
-     * Устанавливает null для поля dataValues при создании.
+     * Устанавливает владельца устройства и null для поля dataValues при создании.
      */
     @Transactional
     @Override
-    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation"}, allEntries = true)
-    public Status create(DeviceDto deviceDto) {
+    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation", "devicesByOwner", "deviceCountByOwner"}, allEntries = true)
+    public Status create(DeviceDto deviceDto, Long ownerId) {
         if (deviceDto == null) {
             return Status.IS_EMPTY;
         }
+        
+        // Проверяем существование владельца
+        Optional<User> owner = userRepository.findById(ownerId);
+        if (owner.isEmpty() || owner.get().getRemovedAt() != null) {
+            return Status.IS_NOT_FOUND;
+        }
+        
         Device newDevice = deviceMapper.toEntity(deviceDto);
+        newDevice.setOwner(owner.get());
         newDevice.setDataValues(null);
         deviceRepository.save(newDevice);
         return Status.IS_OK;
@@ -109,7 +124,7 @@ public class DeviceServiceImpl implements DeviceService {
      */
     @Transactional
     @Override
-    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation"}, allEntries = true)
+    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation", "devicesByOwner", "deviceCountByOwner"}, allEntries = true)
     public Status update(DeviceDto deviceDto, Long id) {
         if (deviceDto == null) {
             return Status.IS_EMPTY;
@@ -146,7 +161,7 @@ public class DeviceServiceImpl implements DeviceService {
      */
     @Transactional
     @Override
-    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation"}, allEntries = true)
+    @CacheEvict(value = {"devices", "allDevices", "devicesByName", "devicesByLocation", "devicesByOwner", "deviceCountByOwner"}, allEntries = true)
     public Status delete(Long id) {
         Optional<Device> removeDevice = deviceRepository.findByIdAndRemovedAtIsNull(id);
         if (removeDevice.isEmpty()) {
@@ -242,6 +257,44 @@ public class DeviceServiceImpl implements DeviceService {
     public Page<DeviceDto> searchDevices(String searchText, Pageable pageable) {
         Page<Device> devices = deviceRepository.searchActiveDevices(searchText, pageable);
         return devices.map(deviceMapper::toDto);
+    }
+
+    // Методы поиска по владельцу
+
+    /**
+     * {@inheritDoc}
+     * 
+     * Результат кешируется по ID владельца для оптимизации.
+     */
+    @Override
+    @Cacheable(value = "devicesByOwner", key = "#ownerId")
+    public List<DeviceDto> findByOwnerId(Long ownerId) {
+        List<Device> devices = deviceRepository.findByOwnerIdAndRemovedAtIsNull(ownerId);
+        return devices.stream()
+                .map(deviceMapper::toDto)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * Пагинированный поиск устройств по владельцу.
+     */
+    @Override
+    public Page<DeviceDto> findByOwnerId(Long ownerId, Pageable pageable) {
+        Page<Device> devices = deviceRepository.findByOwnerIdAndRemovedAtIsNull(ownerId, pageable);
+        return devices.map(deviceMapper::toDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * Подсчет устройств владельца с кешированием.
+     */
+    @Override
+    @Cacheable(value = "deviceCountByOwner", key = "#ownerId")
+    public long countDevicesByOwnerId(Long ownerId) {
+        return deviceRepository.countByOwnerIdAndRemovedAtIsNull(ownerId);
     }
 
     // Методы фильтрации по времени

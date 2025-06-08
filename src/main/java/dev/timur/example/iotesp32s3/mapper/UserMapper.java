@@ -3,7 +3,10 @@ package dev.timur.example.iotesp32s3.mapper;
 import dev.timur.example.iotesp32s3.dto.UserDto;
 import dev.timur.example.iotesp32s3.dto.UserReadDto;
 import dev.timur.example.iotesp32s3.model.User;
+import dev.timur.example.iotesp32s3.model.Device;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import java.util.List;
 
 /**
  * MapStruct маппер для преобразования между моделью User и соответствующими DTO.
@@ -25,7 +28,17 @@ public interface UserMapper {
      * @param user модель пользователя из базы данных
      * @return UserDto с данными пользователя
      */
+    @Mapping(source = "devices", target = "deviceIds")
     UserDto toDto(User user);
+    
+    /**
+     * Преобразует список устройств в список ID устройств.
+     * Вспомогательный метод для маппинга.
+     */
+    default List<Long> mapDevicesToIds(List<Device> devices) {
+        if (devices == null) return null;
+        return devices.stream().map(Device::getId).toList();
+    }
     
     /**
      * Преобразует DTO пользователя в модель для сохранения в базе данных.
@@ -33,6 +46,7 @@ public interface UserMapper {
      * @param userDto DTO с данными пользователя
      * @return модель User для работы с базой данных
      */
+    @Mapping(target = "devices", ignore = true) // устройства устанавливаются отдельно
     User toEntity(UserDto userDto);
     
     /**

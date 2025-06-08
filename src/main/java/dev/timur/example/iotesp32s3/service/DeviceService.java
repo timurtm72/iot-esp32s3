@@ -39,9 +39,10 @@ public interface DeviceService {
      * Создание нового IoT устройства в системе.
      * 
      * @param deviceDto данные для создания устройства
+     * @param ownerId идентификатор владельца устройства
      * @return статус операции (SUCCESS/ERROR)
      */
-    Status create(DeviceDto deviceDto);
+    Status create(DeviceDto deviceDto, Long ownerId);
     
     /**
      * Обновление данных существующего устройства.
@@ -80,6 +81,33 @@ public interface DeviceService {
      * @return список найденных устройств
      */
     List<DeviceDto> findByLocationContaining(String location);
+    
+    // Методы поиска по владельцу
+    
+    /**
+     * Получение всех активных устройств указанного владельца.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @return список активных устройств владельца
+     */
+    List<DeviceDto> findByOwnerId(Long ownerId);
+    
+    /**
+     * Пагинированный поиск активных устройств по владельцу.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @param pageable параметры пагинации
+     * @return страница активных устройств владельца
+     */
+    Page<DeviceDto> findByOwnerId(Long ownerId, Pageable pageable);
+    
+    /**
+     * Подсчет количества активных устройств у владельца.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @return количество активных устройств владельца
+     */
+    long countDevicesByOwnerId(Long ownerId);
     
     // Расширенные методы с пагинацией
     

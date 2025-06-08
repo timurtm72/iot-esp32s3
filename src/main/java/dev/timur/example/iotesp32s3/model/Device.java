@@ -35,6 +35,11 @@ public class Device {
     @JoinColumn(name = "device_id")
     private List<DeviceData> dataValues;
     
+    /** Владелец устройства - связь Many-to-One с User */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+    
     @PrePersist
     public void toCreate() {
         this.createdAt = LocalDateTime.now();

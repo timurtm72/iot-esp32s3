@@ -88,6 +88,33 @@ public interface DeviceRepository extends JpaRepository<Device, Long>, JpaSpecif
      */
     Page<Device> findByLocationContainingIgnoreCaseAndRemovedAtIsNull(String location, Pageable pageable);
     
+    // Методы поиска по владельцу
+    
+    /**
+     * Получение всех активных устройств указанного владельца.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @return список активных устройств владельца
+     */
+    List<Device> findByOwnerIdAndRemovedAtIsNull(Long ownerId);
+    
+    /**
+     * Пагинированный поиск активных устройств по владельцу.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @param pageable параметры пагинации
+     * @return страница активных устройств владельца
+     */
+    Page<Device> findByOwnerIdAndRemovedAtIsNull(Long ownerId, Pageable pageable);
+    
+    /**
+     * Подсчет количества активных устройств у владельца.
+     * 
+     * @param ownerId идентификатор владельца устройств
+     * @return количество активных устройств владельца
+     */
+    long countByOwnerIdAndRemovedAtIsNull(Long ownerId);
+    
     // Составные запросы
     
     /**

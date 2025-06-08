@@ -43,4 +43,7 @@ public class DeviceDto {
     
     /** Дата и время последнего изменения данных устройства */
     private LocalDateTime modifiedAt;
+    
+    /** Идентификатор владельца устройства */
+    private Long ownerId;
 } 

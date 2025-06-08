@@ -43,8 +43,8 @@ public class DeviceController {
     }
 
     @PostMapping
-    public ResponseEntity<Response<String>> createDevice(@RequestBody DeviceDto deviceDto) {
-        Status status = deviceService.create(deviceDto);
+    public ResponseEntity<Response<String>> createDevice(@RequestBody DeviceDto deviceDto, @RequestParam Long ownerId) {
+        Status status = deviceService.create(deviceDto, ownerId);
         if (status == Status.IS_OK) {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new Response<>("Устройство создано успешно", status));
@@ -91,5 +91,21 @@ public class DeviceController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Response<>(null, Status.IS_NOT_FOUND));
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<Response<List<DeviceDto>>> getDevicesByOwner(@PathVariable Long ownerId) {
+        List<DeviceDto> devices = deviceService.findByOwnerId(ownerId);
+        if (devices != null && !devices.isEmpty()) {
+            return ResponseEntity.ok(new Response<>(devices, Status.IS_OK));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, Status.IS_NOT_FOUND));
+    }
+
+    @GetMapping("/owner/{ownerId}/count")
+    public ResponseEntity<Response<Long>> getDevicesCountByOwner(@PathVariable Long ownerId) {
+        long count = deviceService.countDevicesByOwnerId(ownerId);
+        return ResponseEntity.ok(new Response<>(count, Status.IS_OK));
     }
 } 

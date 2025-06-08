@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @EqualsAndHashCode()
 @NoArgsConstructor
@@ -51,6 +52,10 @@ public class User {
     
     @Column(name="last_login")
     private LocalDateTime lastLogin;
+    
+    /** Устройства, принадлежащие пользователю - связь One-to-Many с Device */
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Device> devices;
     
     @PrePersist
     public void onCreate() {
