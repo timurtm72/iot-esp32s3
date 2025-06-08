@@ -15,19 +15,11 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "bit_device_data")
-@SQLDelete(sql = "UPDATE relay SET is_removed = true WHERE id = ?")
-@Where(clause = "is_removed=false")
 public class DeviceData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id",nullable = false)
     private Long id;
-
-    @Column(name="input_value",nullable = false)
-    private Short inputValue = 0;
-
-    @Column(name="output_value",nullable = false)
-    private Short outputValue = 0;
 
     @Column(name="humidity",nullable = false)
     private Float humidity = 0.0F;
@@ -35,28 +27,23 @@ public class DeviceData {
     @Column(name="temperature",nullable = false)
     private Float temperature = 0.0F;
 
+    @Column(name="red_color",nullable = false)
+    private Integer redColor = 0;
+
+    @Column(name="green_color",nullable = false)
+    private Integer greenColor = 0;
+
+    @Column(name="blue_color",nullable = false)
+    private Integer blueColor = 0;
+
+    @Column(name="brightness",nullable = false)
+    private Integer brightness = 0;
+
     @Column(name="timestamp",nullable = false)
     private LocalDateTime timestamp;
 
-    @Column(name = "is_removed", nullable = false)
-    private boolean isRemoved = Boolean.FALSE;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "device_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
     private Device device;
-    @PrePersist
-    public void toCreate() {
-        this.timestamp = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void toModified() {
-        this.timestamp = LocalDateTime.now();
-    }
-
-    @PreRemove
-    public void toRemove() {
-        this.timestamp = LocalDateTime.now();
-    }
 
 }

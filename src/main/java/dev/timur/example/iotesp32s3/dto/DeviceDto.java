@@ -1,27 +1,46 @@
 package dev.timur.example.iotesp32s3.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-@EqualsAndHashCode
+/**
+ * DTO для передачи данных IoT устройства в системе ESP32S3.
+ * Используется для операций создания, чтения, изменения и удаления устройств.
+ * 
+ * Поддерживает:
+ * - Основную информацию об устройстве (название, описание, местоположение)
+ * - Временные метки для аудита изменений
+ * - Концепцию мягкого удаления (через removedAt в модели)
+ * - Интеграцию с системой сбора телеметрии
+ * 
+ * Особенности:
+ * - Оптимизирован для REST API и JSON сериализации
+ * - Поддерживает Lombok для генерации кода
+ * - Совместим с MapStruct маппингом
+ * - Включает Builder паттерн для удобства создания объектов
+ */
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@ToString
+@Builder
 public class DeviceDto {
+    
+    /** Уникальный идентификатор устройства */
     private Long id;
-    @NotBlank(message = "Название устройства не может быть пустым")
+    
+    /** Название устройства (например, "ESP32-Sensor-01") */
     private String name;
-    @NotBlank(message = "Описание устройства не может быть пустым")
+    
+    /** Описание устройства и его назначения */
     private String description;
-    @NotBlank(message = "Местоположение устройства не может быть пустым")
+    
+    /** Физическое местоположение устройства (например, "Комната 101") */
     private String location;
-    @NotNull(message = "Список значений входа не может быть пустым")
-    private List<DeviceDataDto> dataValues;
-    @NotNull(message = "Список значений светодиодов не может быть пустым")
-    private List<StripLedDeviceDataDto> ledValues;
-}
+    
+    /** Дата и время создания записи об устройстве */
+    private LocalDateTime createdAt;
+    
+    /** Дата и время последнего изменения данных устройства */
+    private LocalDateTime modifiedAt;
+} 
