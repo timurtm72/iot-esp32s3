@@ -1,64 +1,51 @@
 package dev.timur.example.iotesp32s3.dto;
 
 import dev.timur.example.iotesp32s3.enums.Role;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * DTO для передачи данных пользователя в системе IoT.
- * Используется для операций создания и изменения пользователей.
- * 
- * ВНИМАНИЕ: Включает пароль! Используйте осторожно и только там, где необходимо.
- * Для операций чтения используйте UserReadDto без пароля.
- * 
- * Особенности:
- * - Поддерживает все поля пользователя включая конфиденциальные данные
- * - Использует Lombok для автоматической генерации геттеров/сеттеров
- * - Поддерживает Builder паттерн для удобного создания объектов
- * - Включает временные метки для аудита изменений
+ * DTO для представления данных пользователя с паролем
+ * Используется для создания и обновления пользователей
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserDto {
     
     /** Уникальный идентификатор пользователя */
     private Long id;
     
-    /** Уникальное имя пользователя для входа в систему */
+    /** Имя пользователя */
     private String username;
     
-    /** Уникальный email адрес пользователя */
+    /** Электронная почта пользователя */
     private String email;
-    
-    /** Пароль пользователя (КОНФИДЕНЦИАЛЬНО - использовать осторожно!) */
+
+    /** Пароль пользователя */
     private String password;
     
-    /** Имя пользователя */
+    /** Имя */
     private String firstName;
     
-    /** Фамилия пользователя */
+    /** Фамилия */
     private String lastName;
     
-    /** Роль пользователя в системе (ADMIN, USER, etc.) */
+    /** Роль пользователя в системе */
     private Role role;
     
-    /** Статус активности пользователя (true - активен, false - заблокирован) */
+    /** Статус активности пользователя */
     private Boolean active;
     
-    /** Дата и время создания пользователя */
-    private LocalDateTime createdAt;
-    
-    /** Дата и время последнего изменения данных пользователя */
-    private LocalDateTime modifiedAt;
-    
-    /** Дата и время последнего входа в систему */
+    /** Время последнего входа в систему */
     private LocalDateTime lastLogin;
     
-    /** Список идентификаторов устройств, принадлежащих пользователю */
-    private List<Long> deviceIds;
-    // Пароль не включаем в DTO для безопасности
+    /** Время создания записи */
+    private LocalDateTime createdAt;
+    
+    /** Время последнего изменения записи */
+    private LocalDateTime modifiedAt;
 } 

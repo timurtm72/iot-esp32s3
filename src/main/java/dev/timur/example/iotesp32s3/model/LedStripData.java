@@ -44,8 +44,8 @@ public class LedStripData {
     @Column(name="timestamp", nullable = false)
     private LocalDateTime timestamp;
 
-    /** Связь с устройством LED ленты */
+    /** Связь с устройством */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", nullable = false)
-    private LedStrip device;
+    private Device device;
 } 

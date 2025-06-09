@@ -2,48 +2,56 @@ package dev.timur.example.iotesp32s3.mapper;
 
 import dev.timur.example.iotesp32s3.dto.LedStripDataDto;
 import dev.timur.example.iotesp32s3.model.LedStripData;
-import org.mapstruct.*;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
 /**
- * Маппер для преобразования между LedStripData и LedStripDataDto
+ * Маппер для преобразования между сущностью LedStripData и LedStripDataDto
+ * Используется MapStruct с интеграцией Spring
  */
-@Mapper(componentModel = "spring")
-@Component
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface LedStripDataMapper {
     
     /**
-     * Преобразовать entity в DTO
-     * @param entity сущность данных
-     * @return DTO данных
+     * Преобразование сущности LedStripData в DTO
+     * @param ledStripData сущность данных LED ленты
+     * @return DTO данных LED ленты
      */
-    @Mapping(source = "device.id", target = "deviceId")
-    LedStripDataDto toDto(LedStripData entity);
+    @Mapping(target = "deviceId", source = "device.id")
+    LedStripDataDto toDto(LedStripData ledStripData);
     
     /**
-     * Преобразовать DTO в entity
-     * @param dto DTO данных
-     * @return сущность данных
+     * Преобразование DTO в сущность LedStripData
+     * @param dto DTO данных LED ленты
+     * @return сущность данных LED ленты
      */
     @Mapping(target = "device", ignore = true)
     LedStripData toEntity(LedStripDataDto dto);
     
     /**
-     * Преобразовать список entity в список DTO
-     * @param entities список сущностей
-     * @return список DTO
-     */
-    List<LedStripDataDto> toDtoList(List<LedStripData> entities);
-    
-    /**
-     * Обновить entity данными из DTO
+     * Обновление сущности данными из DTO
      * @param dto DTO с новыми данными
-     * @param entity существующая сущность
+     * @param ledStripData существующая сущность для обновления
      */
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "device", ignore = true)
-    void updateEntityFromDto(LedStripDataDto dto, @MappingTarget LedStripData entity);
+    void updateEntity(LedStripDataDto dto, @MappingTarget LedStripData ledStripData);
+    
+    /**
+     * Преобразование списка сущностей в список DTO
+     * @param ledStripDataList список сущностей данных LED ленты
+     * @return список DTO данных LED ленты
+     */
+    List<LedStripDataDto> toDtoList(List<LedStripData> ledStripDataList);
+    
+    /**
+     * Преобразование списка DTO в список сущностей
+     * @param dtoList список DTO данных LED ленты
+     * @return список сущностей данных LED ленты
+     */
+    List<LedStripData> toEntityList(List<LedStripDataDto> dtoList);
 } 

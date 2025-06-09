@@ -2,180 +2,219 @@ package dev.timur.example.iotesp32s3.serviceimpl;
 
 import dev.timur.example.iotesp32s3.dto.TempAndHumidityDataDto;
 import dev.timur.example.iotesp32s3.mapper.TempAndHumidityDataMapper;
-import dev.timur.example.iotesp32s3.model.TempAndHumidity;
+import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.model.TempAndHumidityData;
+import dev.timur.example.iotesp32s3.repository.DeviceRepository;
 import dev.timur.example.iotesp32s3.repository.TempAndHumidityDataRepository;
-import dev.timur.example.iotesp32s3.repository.TempAndHumidityRepository;
 import dev.timur.example.iotesp32s3.service.TempAndHumidityDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Реализация сервиса для работы с данными датчиков температуры и влажности
+ * Реализация сервиса для работы с данными температуры и влажности
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TempAndHumidityDataServiceImpl implements TempAndHumidityDataService {
-
-    private final TempAndHumidityDataRepository dataRepository;
-    private final TempAndHumidityRepository deviceRepository;
-    private final TempAndHumidityDataMapper mapper;
-
+    
+    private final TempAndHumidityDataRepository tempAndHumidityDataRepository;
+    private final DeviceRepository deviceRepository;
+    private final TempAndHumidityDataMapper tempAndHumidityDataMapper;
+    
     /**
-     * Создать новую запись данных
-     * @param dataDto данные с датчиков
+     * Создание новой записи данных температуры и влажности
+     * @param tempAndHumidityDataDto данные температуры и влажности
      * @return созданная запись
      */
     @Override
     @Transactional
-    public TempAndHumidityDataDto createData(TempAndHumidityDataDto dataDto) {
-        log.info("Создание новой записи данных для устройства ID: {}", dataDto.getDeviceId());
+    public TempAndHumidityDataDto createTempAndHumidityData(TempAndHumidityDataDto tempAndHumidityDataDto) {
+        log.info("Создание новой записи данных температуры и влажности для устройства с ID: {}", tempAndHumidityDataDto.getDeviceId());
         
-        // Получаем устройство по ID
-        TempAndHumidity device = deviceRepository.findById(dataDto.getDeviceId())
-                .orElseThrow(() -> new RuntimeException("Устройство не найдено с ID: " + dataDto.getDeviceId()));
+        TempAndHumidityData tempAndHumidityData = tempAndHumidityDataMapper.toEntity(tempAndHumidityDataDto);
         
-        // Преобразуем DTO в entity
-        TempAndHumidityData data = mapper.toEntity(dataDto);
-        data.setDevice(device);
-        
-        // Устанавливаем текущее время если не указано
-        if (data.getTimestamp() == null) {
-            data.setTimestamp(LocalDateTime.now());
+        // Установка устройства
+        if (tempAndHumidityDataDto.getDeviceId() != null) {
+            Optional<Device> device = deviceRepository.findById(tempAndHumidityDataDto.getDeviceId());
+            if (device.isPresent()) {
+                tempAndHumidityData.setDevice(device.get());
+            } else {
+                log.warn("Устройство с ID {} не найдено", tempAndHumidityDataDto.getDeviceId());
+                throw new IllegalArgumentException("Устройство не найдено");
+            }
         }
         
-        // Сохраняем данные
-        TempAndHumidityData savedData = dataRepository.save(data);
+        if (tempAndHumidityData.getTimestamp() == null) {
+            tempAndHumidityData.setTimestamp(LocalDateTime.now());
+        }
         
-        log.info("Запись данных создана с ID: {}", savedData.getId());
-        return mapper.toDto(savedData);
+        TempAndHumidityData savedData = tempAndHumidityDataRepository.save(tempAndHumidityData);
+        log.info("Данные температуры и влажности успешно сохранены с ID: {}", savedData.getId());
+        
+        return tempAndHumidityDataMapper.toDto(savedData);
     }
-
+    
     /**
-     * Получить запись по ID
+     * Получение записи данных по идентификатору
      * @param id идентификатор записи
-     * @return запись данных
+     * @return запись данных или пустой Optional
      */
     @Override
-    public TempAndHumidityDataDto getDataById(Long id) {
-        log.debug("Получение записи данных по ID: {}", id);
+    public Optional<TempAndHumidityDataDto> getTempAndHumidityDataById(Long id) {
+        log.debug("Поиск данных температуры и влажности по ID: {}", id);
         
-        TempAndHumidityData data = dataRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Запись данных не найдена с ID: " + id));
-        
-        return mapper.toDto(data);
+        return tempAndHumidityDataRepository.findById(id)
+                .map(tempAndHumidityDataMapper::toDto);
     }
-
+    
     /**
-     * Получить все данные устройства
-     * @param deviceId идентификатор устройства
-     * @return список данных
-     */
-    @Override
-    public List<TempAndHumidityDataDto> getDataByDeviceId(Long deviceId) {
-        log.debug("Получение всех данных устройства с ID: {}", deviceId);
-        
-        List<TempAndHumidityData> dataList = dataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
-        return mapper.toDtoList(dataList);
-    }
-
-    /**
-     * Получить данные за период
-     * @param deviceId идентификатор устройства
-     * @param startTime начало периода
-     * @param endTime конец периода
-     * @return список данных за период
-     */
-    @Override
-    public List<TempAndHumidityDataDto> getDataByPeriod(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {
-        log.debug("Получение данных устройства ID: {} за период с {} по {}", deviceId, startTime, endTime);
-        
-        List<TempAndHumidityData> dataList = dataRepository.findByDeviceIdAndTimestampBetweenOrderByTimestampDesc(deviceId, startTime, endTime);
-        return mapper.toDtoList(dataList);
-    }
-
-    /**
-     * Получить последние данные устройства
-     * @param deviceId идентификатор устройства
-     * @param limit количество записей
-     * @return последние записи
-     */
-    @Override
-    public List<TempAndHumidityDataDto> getLatestData(Long deviceId, int limit) {
-        log.debug("Получение последних {} записей для устройства ID: {}", limit, deviceId);
-        
-        Pageable pageable = PageRequest.of(0, limit);
-        List<TempAndHumidityData> dataList = dataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
-        
-        // Ограничиваем количество результатов
-        List<TempAndHumidityData> limitedData = dataList.stream()
-                .limit(limit)
-                .toList();
-        
-        return mapper.toDtoList(limitedData);
-    }
-
-    /**
-     * Обновить запись данных
+     * Обновление записи данных температуры и влажности
      * @param id идентификатор записи
-     * @param dataDto новые данные
+     * @param tempAndHumidityDataDto новые данные
      * @return обновленная запись
      */
     @Override
     @Transactional
-    public TempAndHumidityDataDto updateData(Long id, TempAndHumidityDataDto dataDto) {
-        log.info("Обновление записи данных с ID: {}", id);
+    public Optional<TempAndHumidityDataDto> updateTempAndHumidityData(Long id, TempAndHumidityDataDto tempAndHumidityDataDto) {
+        log.info("Обновление данных температуры и влажности с ID: {}", id);
         
-        TempAndHumidityData existingData = dataRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Запись данных не найдена с ID: " + id));
-        
-        // Обновляем поля записи
-        mapper.updateEntityFromDto(dataDto, existingData);
-        
-        // Сохраняем изменения
-        TempAndHumidityData updatedData = dataRepository.save(existingData);
-        
-        log.info("Запись данных обновлена с ID: {}", updatedData.getId());
-        return mapper.toDto(updatedData);
+        return tempAndHumidityDataRepository.findById(id)
+                .map(existingData -> {
+                    tempAndHumidityDataMapper.updateEntity(tempAndHumidityDataDto, existingData);
+                    
+                    // Обновление устройства если изменилось
+                    if (tempAndHumidityDataDto.getDeviceId() != null) {
+                        Optional<Device> newDevice = deviceRepository.findById(tempAndHumidityDataDto.getDeviceId());
+                        if (newDevice.isPresent()) {
+                            existingData.setDevice(newDevice.get());
+                        }
+                    }
+                    
+                    TempAndHumidityData updatedData = tempAndHumidityDataRepository.save(existingData);
+                    log.info("Данные температуры и влажности с ID {} успешно обновлены", id);
+                    
+                    return tempAndHumidityDataMapper.toDto(updatedData);
+                });
     }
-
+    
     /**
-     * Удалить запись данных
+     * Удаление записи данных
      * @param id идентификатор записи
+     * @return true если запись удалена, false если не найдена
      */
     @Override
     @Transactional
-    public void deleteData(Long id) {
-        log.info("Удаление записи данных с ID: {}", id);
+    public boolean deleteTempAndHumidityData(Long id) {
+        log.info("Удаление данных температуры и влажности с ID: {}", id);
         
-        if (!dataRepository.existsById(id)) {
-            throw new RuntimeException("Запись данных не найдена с ID: " + id);
+        if (tempAndHumidityDataRepository.existsById(id)) {
+            tempAndHumidityDataRepository.deleteById(id);
+            log.info("Данные температуры и влажности с ID {} успешно удалены", id);
+            return true;
         }
-        
-        dataRepository.deleteById(id);
-        log.info("Запись данных удалена с ID: {}", id);
+        return false;
     }
-
+    
     /**
-     * Получить данные с высокой температурой
-     * @param deviceId идентификатор устройства
-     * @param minTemperature минимальная температура
-     * @return записи с температурой выше указанной
+     * Получение всех данных температуры и влажности
+     * @return список всех записей
      */
     @Override
-    public List<TempAndHumidityDataDto> getHighTemperatureData(Long deviceId, Float minTemperature) {
-        log.debug("Получение данных с температурой выше {} для устройства ID: {}", minTemperature, deviceId);
+    public List<TempAndHumidityDataDto> getAllTempAndHumidityData() {
+        log.debug("Получение всех данных температуры и влажности");
         
-        List<TempAndHumidityData> dataList = dataRepository.findByDeviceIdAndTemperatureGreaterThan(deviceId, minTemperature);
-        return mapper.toDtoList(dataList);
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findAll();
+        return tempAndHumidityDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных по устройству
+     * @param deviceId идентификатор устройства
+     * @return список данных для устройства
+     */
+    @Override
+    @Cacheable(value = "tempHumidityDataByDevice", key = "#deviceId")
+    public List<TempAndHumidityDataDto> getTempAndHumidityDataByDevice(Long deviceId) {
+        log.debug("Получение данных температуры и влажности для устройства с ID: {}", deviceId);
+        
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findByDeviceId(deviceId);
+        return tempAndHumidityDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных по устройству отсортированных по времени
+     * @param deviceId идентификатор устройства
+     * @return список данных отсортированный по времени
+     */
+    @Override
+    public List<TempAndHumidityDataDto> getTempAndHumidityDataByDeviceOrderByTime(Long deviceId) {
+        log.debug("Получение данных температуры и влажности для устройства с ID {} отсортированных по времени", deviceId);
+        
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
+        return tempAndHumidityDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение последних данных для устройства
+     * @param deviceId идентификатор устройства
+     * @return последние данные или пустой Optional
+     */
+    @Override
+    @Cacheable(value = "latestTempHumidityData", key = "#deviceId")
+    public Optional<TempAndHumidityDataDto> getLatestTempAndHumidityDataByDevice(Long deviceId) {
+        log.debug("Получение последних данных температуры и влажности для устройства с ID: {}", deviceId);
+        
+        return tempAndHumidityDataRepository.findFirstByDeviceIdOrderByTimestampDesc(deviceId)
+                .map(tempAndHumidityDataMapper::toDto);
+    }
+    
+    /**
+     * Получение данных в заданном временном диапазоне
+     * @param deviceId идентификатор устройства
+     * @param startTime начало периода
+     * @param endTime конец периода
+     * @return список данных в указанном диапазоне
+     */
+    @Override
+    public List<TempAndHumidityDataDto> getTempAndHumidityDataByDeviceAndTimeRange(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {
+        log.debug("Получение данных температуры и влажности для устройства с ID {} в диапазоне: {} - {}", deviceId, startTime, endTime);
+        
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findByDeviceIdAndTimestampBetween(deviceId, startTime, endTime);
+        return tempAndHumidityDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных с температурой больше указанного значения
+     * @param temperature минимальная температура
+     * @return список данных
+     */
+    @Override
+    public List<TempAndHumidityDataDto> getTempAndHumidityDataByTemperatureGreaterThan(Float temperature) {
+        log.debug("Получение данных температуры и влажности с температурой больше: {}", temperature);
+        
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findByTemperatureGreaterThan(temperature);
+        return tempAndHumidityDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных с влажностью больше указанного значения
+     * @param humidity минимальная влажность
+     * @return список данных
+     */
+    @Override
+    public List<TempAndHumidityDataDto> getTempAndHumidityDataByHumidityGreaterThan(Float humidity) {
+        log.debug("Получение данных температуры и влажности с влажностью больше: {}", humidity);
+        
+        List<TempAndHumidityData> dataList = tempAndHumidityDataRepository.findByHumidityGreaterThan(humidity);
+        return tempAndHumidityDataMapper.toDtoList(dataList);
     }
 } 

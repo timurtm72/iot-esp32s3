@@ -6,8 +6,8 @@ import lombok.*;
 import java.util.List;
 
 /**
- * Сущность устройства LED ленты
- * Представляет собой IoT устройство для управления светодиодной лентой
+ * Сущность IoT устройства
+ * Универсальное устройство которое может содержать разные типы данных
  */
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -16,8 +16,8 @@ import java.util.List;
 @Setter
 @ToString(callSuper = true)
 @Entity
-@Table(name = "led_strip")
-public class LedStrip extends BaseEntity {
+@Table(name = "device")
+public class Device extends BaseEntity {
     
     /** Уникальный идентификатор устройства */
     @Id
@@ -37,9 +37,13 @@ public class LedStrip extends BaseEntity {
     @Column(name="location", length = 500)
     private String location;
     
-    /** Данные с управления LED лентой */
+    /** Данные LED ленты */
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<LedStripData> dataValues;
+    private List<LedStripData> ledStripData;
+    
+    /** Данные температуры и влажности */
+    @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TempAndHumidityData> tempAndHumidityData;
     
     /** Владелец устройства - связь Many-to-One с User */
     @ManyToOne(fetch = FetchType.LAZY)

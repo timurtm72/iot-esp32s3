@@ -4,6 +4,7 @@ import dev.timur.example.iotesp32s3.dto.LedStripDataDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Сервис для работы с данными LED ленты
@@ -11,71 +12,74 @@ import java.util.List;
 public interface LedStripDataService {
     
     /**
-     * Создать новую запись данных
-     * @param dataDto данные LED ленты
+     * Создание новой записи данных LED ленты
+     * @param ledStripDataDto данные LED ленты
      * @return созданная запись
      */
-    LedStripDataDto createData(LedStripDataDto dataDto);
+    LedStripDataDto createLedStripData(LedStripDataDto ledStripDataDto);
     
     /**
-     * Получить запись по ID
+     * Получение записи данных LED ленты по идентификатору
      * @param id идентификатор записи
-     * @return запись данных
+     * @return запись данных или пустой Optional
      */
-    LedStripDataDto getDataById(Long id);
+    Optional<LedStripDataDto> getLedStripDataById(Long id);
     
     /**
-     * Получить все данные устройства
+     * Обновление записи данных LED ленты
+     * @param id идентификатор записи
+     * @param ledStripDataDto новые данные
+     * @return обновленная запись
+     */
+    Optional<LedStripDataDto> updateLedStripData(Long id, LedStripDataDto ledStripDataDto);
+    
+    /**
+     * Удаление записи данных LED ленты
+     * @param id идентификатор записи
+     * @return true если запись удалена, false если не найдена
+     */
+    boolean deleteLedStripData(Long id);
+    
+    /**
+     * Получение всех данных LED ленты
+     * @return список всех записей
+     */
+    List<LedStripDataDto> getAllLedStripData();
+    
+    /**
+     * Получение данных LED ленты по устройству
      * @param deviceId идентификатор устройства
-     * @return список данных
+     * @return список данных для устройства
      */
-    List<LedStripDataDto> getDataByDeviceId(Long deviceId);
+    List<LedStripDataDto> getLedStripDataByDevice(Long deviceId);
     
     /**
-     * Получить данные за период
+     * Получение данных LED ленты по устройству отсортированных по времени
+     * @param deviceId идентификатор устройства
+     * @return список данных отсортированный по времени
+     */
+    List<LedStripDataDto> getLedStripDataByDeviceOrderByTime(Long deviceId);
+    
+    /**
+     * Получение последних данных LED ленты для устройства
+     * @param deviceId идентификатор устройства
+     * @return последние данные или пустой Optional
+     */
+    Optional<LedStripDataDto> getLatestLedStripDataByDevice(Long deviceId);
+    
+    /**
+     * Получение данных LED ленты в заданном временном диапазоне
      * @param deviceId идентификатор устройства
      * @param startTime начало периода
      * @param endTime конец периода
-     * @return список данных за период
+     * @return список данных в указанном диапазоне
      */
-    List<LedStripDataDto> getDataByPeriod(Long deviceId, LocalDateTime startTime, LocalDateTime endTime);
+    List<LedStripDataDto> getLedStripDataByDeviceAndTimeRange(Long deviceId, LocalDateTime startTime, LocalDateTime endTime);
     
     /**
-     * Получить последние данные устройства
-     * @param deviceId идентификатор устройства
-     * @param limit количество записей
-     * @return последние записи
+     * Получение данных LED ленты с яркостью больше указанного значения
+     * @param brightness минимальная яркость
+     * @return список данных
      */
-    List<LedStripDataDto> getLatestData(Long deviceId, int limit);
-    
-    /**
-     * Получить текущее состояние LED ленты
-     * @param deviceId идентификатор устройства
-     * @return текущее состояние
-     */
-    LedStripDataDto getCurrentState(Long deviceId);
-    
-    /**
-     * Обновить запись данных
-     * @param id идентификатор записи
-     * @param dataDto новые данные
-     * @return обновленная запись
-     */
-    LedStripDataDto updateData(Long id, LedStripDataDto dataDto);
-    
-    /**
-     * Удалить запись данных
-     * @param id идентификатор записи
-     */
-    void deleteData(Long id);
-    
-    /**
-     * Получить данные по цвету
-     * @param deviceId идентификатор устройства
-     * @param redColor красный цвет
-     * @param greenColor зеленый цвет
-     * @param blueColor синий цвет
-     * @return записи с указанным цветом
-     */
-    List<LedStripDataDto> getDataByColor(Long deviceId, Integer redColor, Integer greenColor, Integer blueColor);
+    List<LedStripDataDto> getLedStripDataByBrightnessGreaterThan(Integer brightness);
 } 

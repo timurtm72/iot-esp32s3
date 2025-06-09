@@ -2,18 +2,20 @@ package dev.timur.example.iotesp32s3.serviceimpl;
 
 import dev.timur.example.iotesp32s3.dto.LedStripDataDto;
 import dev.timur.example.iotesp32s3.mapper.LedStripDataMapper;
-import dev.timur.example.iotesp32s3.model.LedStrip;
+import dev.timur.example.iotesp32s3.model.Device;
 import dev.timur.example.iotesp32s3.model.LedStripData;
+import dev.timur.example.iotesp32s3.repository.DeviceRepository;
 import dev.timur.example.iotesp32s3.repository.LedStripDataRepository;
-import dev.timur.example.iotesp32s3.repository.LedStripRepository;
 import dev.timur.example.iotesp32s3.service.LedStripDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Реализация сервиса для работы с данными LED ленты
@@ -23,174 +25,183 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LedStripDataServiceImpl implements LedStripDataService {
-
-    private final LedStripDataRepository dataRepository;
-    private final LedStripRepository deviceRepository;
-    private final LedStripDataMapper mapper;
-
+    
+    private final LedStripDataRepository ledStripDataRepository;
+    private final DeviceRepository deviceRepository;
+    private final LedStripDataMapper ledStripDataMapper;
+    
     /**
-     * Создать новую запись данных
-     * @param dataDto данные LED ленты
+     * Создание новой записи данных LED ленты
+     * @param ledStripDataDto данные LED ленты
      * @return созданная запись
      */
     @Override
     @Transactional
-    public LedStripDataDto createData(LedStripDataDto dataDto) {
-        log.info("Создание новой записи данных для LED устройства ID: {}", dataDto.getDeviceId());
+    public LedStripDataDto createLedStripData(LedStripDataDto ledStripDataDto) {
+        log.info("Создание новой записи данных LED ленты для устройства с ID: {}", ledStripDataDto.getDeviceId());
         
-        // Получаем устройство по ID
-        LedStrip device = deviceRepository.findById(dataDto.getDeviceId())
-                .orElseThrow(() -> new RuntimeException("Устройство не найдено с ID: " + dataDto.getDeviceId()));
+        LedStripData ledStripData = ledStripDataMapper.toEntity(ledStripDataDto);
         
-        // Преобразуем DTO в entity
-        LedStripData data = mapper.toEntity(dataDto);
-        data.setDevice(device);
-        
-        // Устанавливаем текущее время если не указано
-        if (data.getTimestamp() == null) {
-            data.setTimestamp(LocalDateTime.now());
+        // Установка устройства
+        if (ledStripDataDto.getDeviceId() != null) {
+            Optional<Device> device = deviceRepository.findById(ledStripDataDto.getDeviceId());
+            if (device.isPresent()) {
+                ledStripData.setDevice(device.get());
+            } else {
+                log.warn("Устройство с ID {} не найдено", ledStripDataDto.getDeviceId());
+                throw new IllegalArgumentException("Устройство не найдено");
+            }
         }
         
-        // Сохраняем данные
-        LedStripData savedData = dataRepository.save(data);
+        if (ledStripData.getTimestamp() == null) {
+            ledStripData.setTimestamp(LocalDateTime.now());
+        }
         
-        log.info("Запись данных LED создана с ID: {}", savedData.getId());
-        return mapper.toDto(savedData);
+        LedStripData savedData = ledStripDataRepository.save(ledStripData);
+        log.info("Данные LED ленты успешно сохранены с ID: {}", savedData.getId());
+        
+        return ledStripDataMapper.toDto(savedData);
     }
-
+    
     /**
-     * Получить запись по ID
+     * Получение записи данных LED ленты по идентификатору
      * @param id идентификатор записи
-     * @return запись данных
+     * @return запись данных или пустой Optional
      */
     @Override
-    public LedStripDataDto getDataById(Long id) {
-        log.debug("Получение записи данных LED по ID: {}", id);
+    public Optional<LedStripDataDto> getLedStripDataById(Long id) {
+        log.debug("Поиск данных LED ленты по ID: {}", id);
         
-        LedStripData data = dataRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Запись данных не найдена с ID: " + id));
-        
-        return mapper.toDto(data);
+        return ledStripDataRepository.findById(id)
+                .map(ledStripDataMapper::toDto);
     }
-
+    
     /**
-     * Получить все данные устройства
-     * @param deviceId идентификатор устройства
-     * @return список данных
-     */
-    @Override
-    public List<LedStripDataDto> getDataByDeviceId(Long deviceId) {
-        log.debug("Получение всех данных LED устройства с ID: {}", deviceId);
-        
-        List<LedStripData> dataList = dataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
-        return mapper.toDtoList(dataList);
-    }
-
-    /**
-     * Получить данные за период
-     * @param deviceId идентификатор устройства
-     * @param startTime начало периода
-     * @param endTime конец периода
-     * @return список данных за период
-     */
-    @Override
-    public List<LedStripDataDto> getDataByPeriod(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {
-        log.debug("Получение данных LED устройства ID: {} за период с {} по {}", deviceId, startTime, endTime);
-        
-        List<LedStripData> dataList = dataRepository.findByDeviceIdAndTimestampBetweenOrderByTimestampDesc(deviceId, startTime, endTime);
-        return mapper.toDtoList(dataList);
-    }
-
-    /**
-     * Получить последние данные устройства
-     * @param deviceId идентификатор устройства
-     * @param limit количество записей
-     * @return последние записи
-     */
-    @Override
-    public List<LedStripDataDto> getLatestData(Long deviceId, int limit) {
-        log.debug("Получение последних {} записей для LED устройства ID: {}", limit, deviceId);
-        
-        List<LedStripData> dataList = dataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
-        
-        // Ограничиваем количество результатов
-        List<LedStripData> limitedData = dataList.stream()
-                .limit(limit)
-                .toList();
-        
-        return mapper.toDtoList(limitedData);
-    }
-
-    /**
-     * Получить текущее состояние LED ленты
-     * @param deviceId идентификатор устройства
-     * @return текущее состояние
-     */
-    @Override
-    public LedStripDataDto getCurrentState(Long deviceId) {
-        log.debug("Получение текущего состояния LED устройства с ID: {}", deviceId);
-        
-        LedStripData currentState = dataRepository.findFirstByDeviceIdOrderByTimestampDesc(deviceId)
-                .orElseThrow(() -> new RuntimeException("Состояние LED устройства не найдено для ID: " + deviceId));
-        
-        return mapper.toDto(currentState);
-    }
-
-    /**
-     * Обновить запись данных
+     * Обновление записи данных LED ленты
      * @param id идентификатор записи
-     * @param dataDto новые данные
+     * @param ledStripDataDto новые данные
      * @return обновленная запись
      */
     @Override
     @Transactional
-    public LedStripDataDto updateData(Long id, LedStripDataDto dataDto) {
-        log.info("Обновление записи данных LED с ID: {}", id);
+    public Optional<LedStripDataDto> updateLedStripData(Long id, LedStripDataDto ledStripDataDto) {
+        log.info("Обновление данных LED ленты с ID: {}", id);
         
-        LedStripData existingData = dataRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Запись данных не найдена с ID: " + id));
-        
-        // Обновляем поля записи
-        mapper.updateEntityFromDto(dataDto, existingData);
-        
-        // Сохраняем изменения
-        LedStripData updatedData = dataRepository.save(existingData);
-        
-        log.info("Запись данных LED обновлена с ID: {}", updatedData.getId());
-        return mapper.toDto(updatedData);
+        return ledStripDataRepository.findById(id)
+                .map(existingData -> {
+                    ledStripDataMapper.updateEntity(ledStripDataDto, existingData);
+                    
+                    // Обновление устройства если изменилось
+                    if (ledStripDataDto.getDeviceId() != null) {
+                        Optional<Device> newDevice = deviceRepository.findById(ledStripDataDto.getDeviceId());
+                        if (newDevice.isPresent()) {
+                            existingData.setDevice(newDevice.get());
+                        }
+                    }
+                    
+                    LedStripData updatedData = ledStripDataRepository.save(existingData);
+                    log.info("Данные LED ленты с ID {} успешно обновлены", id);
+                    
+                    return ledStripDataMapper.toDto(updatedData);
+                });
     }
-
+    
     /**
-     * Удалить запись данных
+     * Удаление записи данных LED ленты
      * @param id идентификатор записи
+     * @return true если запись удалена, false если не найдена
      */
     @Override
     @Transactional
-    public void deleteData(Long id) {
-        log.info("Удаление записи данных LED с ID: {}", id);
+    public boolean deleteLedStripData(Long id) {
+        log.info("Удаление данных LED ленты с ID: {}", id);
         
-        if (!dataRepository.existsById(id)) {
-            throw new RuntimeException("Запись данных не найдена с ID: " + id);
+        if (ledStripDataRepository.existsById(id)) {
+            ledStripDataRepository.deleteById(id);
+            log.info("Данные LED ленты с ID {} успешно удалены", id);
+            return true;
         }
-        
-        dataRepository.deleteById(id);
-        log.info("Запись данных LED удалена с ID: {}", id);
+        return false;
     }
-
+    
     /**
-     * Получить данные по цвету
-     * @param deviceId идентификатор устройства
-     * @param redColor красный цвет
-     * @param greenColor зеленый цвет
-     * @param blueColor синий цвет
-     * @return записи с указанным цветом
+     * Получение всех данных LED ленты
+     * @return список всех записей
      */
     @Override
-    public List<LedStripDataDto> getDataByColor(Long deviceId, Integer redColor, Integer greenColor, Integer blueColor) {
-        log.debug("Получение данных LED устройства ID: {} с цветом RGB({}, {}, {})", deviceId, redColor, greenColor, blueColor);
+    public List<LedStripDataDto> getAllLedStripData() {
+        log.debug("Получение всех данных LED ленты");
         
-        List<LedStripData> dataList = dataRepository.findByDeviceIdAndRedColorAndGreenColorAndBlueColorOrderByTimestampDesc(
-                deviceId, redColor, greenColor, blueColor);
-        return mapper.toDtoList(dataList);
+        List<LedStripData> dataList = ledStripDataRepository.findAll();
+        return ledStripDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных LED ленты по устройству
+     * @param deviceId идентификатор устройства
+     * @return список данных для устройства
+     */
+    @Override
+    @Cacheable(value = "ledStripDataByDevice", key = "#deviceId")
+    public List<LedStripDataDto> getLedStripDataByDevice(Long deviceId) {
+        log.debug("Получение данных LED ленты для устройства с ID: {}", deviceId);
+        
+        List<LedStripData> dataList = ledStripDataRepository.findByDeviceId(deviceId);
+        return ledStripDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных LED ленты по устройству отсортированных по времени
+     * @param deviceId идентификатор устройства
+     * @return список данных отсортированный по времени
+     */
+    @Override
+    public List<LedStripDataDto> getLedStripDataByDeviceOrderByTime(Long deviceId) {
+        log.debug("Получение данных LED ленты для устройства с ID {} отсортированных по времени", deviceId);
+        
+        List<LedStripData> dataList = ledStripDataRepository.findByDeviceIdOrderByTimestampDesc(deviceId);
+        return ledStripDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение последних данных LED ленты для устройства
+     * @param deviceId идентификатор устройства
+     * @return последние данные или пустой Optional
+     */
+    @Override
+    @Cacheable(value = "latestLedStripData", key = "#deviceId")
+    public Optional<LedStripDataDto> getLatestLedStripDataByDevice(Long deviceId) {
+        log.debug("Получение последних данных LED ленты для устройства с ID: {}", deviceId);
+        
+        return ledStripDataRepository.findFirstByDeviceIdOrderByTimestampDesc(deviceId)
+                .map(ledStripDataMapper::toDto);
+    }
+    
+    /**
+     * Получение данных LED ленты в заданном временном диапазоне
+     * @param deviceId идентификатор устройства
+     * @param startTime начало периода
+     * @param endTime конец периода
+     * @return список данных в указанном диапазоне
+     */
+    @Override
+    public List<LedStripDataDto> getLedStripDataByDeviceAndTimeRange(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {
+        log.debug("Получение данных LED ленты для устройства с ID {} в диапазоне: {} - {}", deviceId, startTime, endTime);
+        
+        List<LedStripData> dataList = ledStripDataRepository.findByDeviceIdAndTimestampBetween(deviceId, startTime, endTime);
+        return ledStripDataMapper.toDtoList(dataList);
+    }
+    
+    /**
+     * Получение данных LED ленты с яркостью больше указанного значения
+     * @param brightness минимальная яркость
+     * @return список данных
+     */
+    @Override
+    public List<LedStripDataDto> getLedStripDataByBrightnessGreaterThan(Integer brightness) {
+        log.debug("Получение данных LED ленты с яркостью больше: {}", brightness);
+        
+        List<LedStripData> dataList = ledStripDataRepository.findByBrightnessGreaterThan(brightness);
+        return ledStripDataMapper.toDtoList(dataList);
     }
 } 

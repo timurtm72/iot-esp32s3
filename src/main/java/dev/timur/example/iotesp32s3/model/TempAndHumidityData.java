@@ -36,8 +36,8 @@ public class TempAndHumidityData {
     @Column(name="timestamp", nullable = false)
     private LocalDateTime timestamp;
 
-    /** Связь с устройством температуры и влажности */
+    /** Связь с устройством */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", nullable = false)
-    private TempAndHumidity device;
+    private Device device;
 } 

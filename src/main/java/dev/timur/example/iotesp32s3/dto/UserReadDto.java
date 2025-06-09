@@ -1,56 +1,48 @@
 package dev.timur.example.iotesp32s3.dto;
 
 import dev.timur.example.iotesp32s3.enums.Role;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 /**
- * Безопасный DTO для чтения данных пользователя в системе IoT.
- * Исключает конфиденциальные данные (пароль) для безопасной передачи.
- * 
- * Используется для:
- * - Всех операций получения пользователей
- * - API ответов с пользовательскими данными  
- * - Отображения информации о пользователях в UI
- * - Логирования и аудита без утечки паролей
- * 
- * Особенности:
- * - НЕ содержит пароль для максимальной безопасности
- * - Включает все необходимые данные для отображения
- * - Поддерживает Lombok для генерации геттеров/сеттеров
- * - Оптимизирован для сериализации в JSON
+ * DTO для представления данных пользователя без пароля
+ * Используется для возврата данных клиенту
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserReadDto {
-    
+
     /** Уникальный идентификатор пользователя */
     private Long id;
-    
-    /** Уникальное имя пользователя для входа в систему */
-    private String username;
-    
-    /** Email адрес пользователя */
-    private String email;
-    
+
     /** Имя пользователя */
+    private String username;
+
+    /** Электронная почта пользователя */
+    private String email;
+
+    /** Имя */
     private String firstName;
-    
-    /** Фамилия пользователя */
+
+    /** Фамилия */
     private String lastName;
-    
-    /** Роль пользователя в системе (ADMIN, USER, etc.) */
+
+    /** Роль пользователя в системе */
     private Role role;
-    
-    /** Статус активности пользователя (true - активен, false - заблокирован) */
+
+    /** Статус активности пользователя */
     private Boolean active;
-    
-    /** Дата и время создания пользователя */
+
+    /** Время последнего входа в систему */
+    private LocalDateTime lastLogin;
+
+    /** Время создания записи */
     private LocalDateTime createdAt;
-    
-    /** Дата и время последнего обновления данных пользователя */
-    private LocalDateTime updatedAt;
+
+    /** Время последнего изменения записи */
+    private LocalDateTime modifiedAt;
 }

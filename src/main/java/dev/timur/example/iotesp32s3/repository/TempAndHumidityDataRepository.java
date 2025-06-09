@@ -2,58 +2,59 @@ package dev.timur.example.iotesp32s3.repository;
 
 import dev.timur.example.iotesp32s3.model.TempAndHumidityData;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Репозиторий для работы с данными датчиков температуры и влажности
+ * Репозиторий для работы с данными температуры и влажности
  */
 @Repository
 public interface TempAndHumidityDataRepository extends JpaRepository<TempAndHumidityData, Long> {
     
     /**
-     * Найти все данные по устройству
+     * Поиск данных температуры и влажности по устройству
      * @param deviceId идентификатор устройства
-     * @return список данных
+     * @return список данных для устройства
      */
     List<TempAndHumidityData> findByDeviceId(Long deviceId);
     
     /**
-     * Найти данные по устройству за период
+     * Поиск данных по устройству с сортировкой по времени (по убыванию)
      * @param deviceId идентификатор устройства
-     * @param startTime начало периода
-     * @param endTime конец периода
-     * @return список данных за период
-     */
-    List<TempAndHumidityData> findByDeviceIdAndTimestampBetweenOrderByTimestampDesc(Long deviceId, 
-                                                                                   LocalDateTime startTime, 
-                                                                                   LocalDateTime endTime);
-    
-    /**
-     * Найти записи по устройству, отсортированные по времени (последние сначала)
-     * @param deviceId идентификатор устройства
-     * @return записи, отсортированные по времени
+     * @return список данных отсортированный по времени
      */
     List<TempAndHumidityData> findByDeviceIdOrderByTimestampDesc(Long deviceId);
     
     /**
-     * Найти записи по температуре выше указанного значения
+     * Поиск последних данных температуры и влажности для устройства
      * @param deviceId идентификатор устройства
-     * @param temperature минимальная температура
-     * @return записи с температурой выше указанной
+     * @return последние данные
      */
-    List<TempAndHumidityData> findByDeviceIdAndTemperatureGreaterThan(Long deviceId, Float temperature);
+    Optional<TempAndHumidityData> findFirstByDeviceIdOrderByTimestampDesc(Long deviceId);
     
     /**
-     * Найти записи по влажности в указанном диапазоне
+     * Поиск данных по устройству в заданном временном диапазоне
      * @param deviceId идентификатор устройства
-     * @param minHumidity минимальная влажность
-     * @param maxHumidity максимальная влажность
-     * @return записи с влажностью в диапазоне
+     * @param startTime начало периода
+     * @param endTime конец периода
+     * @return список данных в указанном диапазоне
      */
-    List<TempAndHumidityData> findByDeviceIdAndHumidityBetween(Long deviceId, Float minHumidity, Float maxHumidity);
+    List<TempAndHumidityData> findByDeviceIdAndTimestampBetween(Long deviceId, LocalDateTime startTime, LocalDateTime endTime);
+    
+    /**
+     * Поиск данных с температурой больше указанного значения
+     * @param temperature минимальная температура
+     * @return список данных
+     */
+    List<TempAndHumidityData> findByTemperatureGreaterThan(Float temperature);
+    
+    /**
+     * Поиск данных с влажностью больше указанного значения
+     * @param humidity минимальная влажность
+     * @return список данных
+     */
+    List<TempAndHumidityData> findByHumidityGreaterThan(Float humidity);
 } 

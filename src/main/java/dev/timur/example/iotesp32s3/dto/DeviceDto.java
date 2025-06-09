@@ -1,18 +1,18 @@
 package dev.timur.example.iotesp32s3.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * DTO для передачи данных устройства LED ленты
+ * DTO для представления данных IoT устройства
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class LedStripDto {
+public class DeviceDto {
     
     /** Уникальный идентификатор устройства */
     private Long id;
@@ -26,21 +26,12 @@ public class LedStripDto {
     /** Местоположение устройства */
     private String location;
     
+    /** Идентификатор владельца устройства */
+    private Long ownerId;
+    
     /** Время создания записи */
     private LocalDateTime createdAt;
     
-    /** Время последнего изменения */
+    /** Время последнего изменения записи */
     private LocalDateTime modifiedAt;
-    
-    /** Время удаления записи */
-    private LocalDateTime removedAt;
-    
-    /** Данные управления LED лентой */
-    private List<LedStripDataDto> dataValues;
-    
-    /** Идентификатор владельца */
-    private Long ownerId;
-    
-    /** Имя владельца */
-    private String ownerUsername;
 } 

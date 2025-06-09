@@ -5,44 +5,71 @@ import dev.timur.example.iotesp32s3.dto.UserReadDto;
 import dev.timur.example.iotesp32s3.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import java.util.List;
 
 /**
- * MapStruct маппер для преобразования между моделью User и соответствующими DTO.
- * Автоматически генерирует безопасные методы преобразования без утечки конфиденциальных данных.
- * 
- * Особенности:
- * - Конфигурирован как Spring компонент для автоматического внедрения
- * - UserReadDto исключает пароль из операций чтения для безопасности
- * - Автоматическое маппинг полей по именам
- * - Compile-time проверка совместимости типов
+ * Маппер для преобразования между сущностью User и DTO
+ * Используется MapStruct с интеграцией Spring
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface UserMapper {
     
     /**
-     * Преобразует модель пользователя в DTO для передачи данных.
-     * Включает все поля, включая пароль (используется осторожно).
-     * 
-     * @param user модель пользователя из базы данных
-     * @return UserDto с данными пользователя
+     * Преобразование сущности User в DTO для чтения (без пароля)
+     * @param user сущность пользователя
+     * @return DTO пользователя для чтения
+     */
+    UserReadDto toReadDto(User user);
+    
+    /**
+     * Преобразование сущности User в DTO с паролем
+     * @param user сущность пользователя
+     * @return DTO пользователя с паролем
      */
     UserDto toDto(User user);
     
     /**
-     * Преобразует DTO пользователя в модель для сохранения в базе данных.
-     * 
-     * @param userDto DTO с данными пользователя
-     * @return модель User для работы с базой данных
+     * Преобразование DTO в сущность User
+     * @param dto DTO пользователя
+     * @return сущность пользователя
      */
-    User toEntity(UserDto userDto);
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "removedAt", ignore = true)
+    User toEntity(UserDto dto);
     
     /**
-     * Преобразует модель пользователя в безопасный DTO для чтения.
-     * Автоматически исключает пароль и другие конфиденциальные данные.
-     * Используется для всех операций получения пользователей.
-     * 
-     * @param user модель пользователя из базы данных
-     * @return UserReadDto без конфиденциальных данных (пароля)
+     * Обновление сущности данными из DTO
+     * @param dto DTO с новыми данными
+     * @param user существующая сущность для обновления
      */
-    UserReadDto toReadDto(User user);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "removedAt", ignore = true)
+    void updateEntity(UserDto dto, @MappingTarget User user);
+    
+    /**
+     * Преобразование списка сущностей в список DTO для чтения
+     * @param users список сущностей пользователей
+     * @return список DTO пользователей для чтения
+     */
+    List<UserReadDto> toReadDtoList(List<User> users);
+    
+    /**
+     * Преобразование списка сущностей в список DTO с паролями
+     * @param users список сущностей пользователей
+     * @return список DTO пользователей с паролями
+     */
+    List<UserDto> toDtoList(List<User> users);
+    
+    /**
+     * Преобразование списка DTO в список сущностей
+     * @param dtoList список DTO пользователей
+     * @return список сущностей пользователей
+     */
+    List<User> toEntityList(List<UserDto> dtoList);
 } 

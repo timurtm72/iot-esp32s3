@@ -4,69 +4,89 @@ import dev.timur.example.iotesp32s3.dto.TempAndHumidityDataDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Сервис для работы с данными датчиков температуры и влажности
+ * Сервис для работы с данными температуры и влажности
  */
 public interface TempAndHumidityDataService {
     
     /**
-     * Создать новую запись данных
-     * @param dataDto данные с датчиков
+     * Создание новой записи данных температуры и влажности
+     * @param tempAndHumidityDataDto данные температуры и влажности
      * @return созданная запись
      */
-    TempAndHumidityDataDto createData(TempAndHumidityDataDto dataDto);
+    TempAndHumidityDataDto createTempAndHumidityData(TempAndHumidityDataDto tempAndHumidityDataDto);
     
     /**
-     * Получить запись по ID
+     * Получение записи данных по идентификатору
      * @param id идентификатор записи
-     * @return запись данных
+     * @return запись данных или пустой Optional
      */
-    TempAndHumidityDataDto getDataById(Long id);
+    Optional<TempAndHumidityDataDto> getTempAndHumidityDataById(Long id);
     
     /**
-     * Получить все данные устройства
+     * Обновление записи данных температуры и влажности
+     * @param id идентификатор записи
+     * @param tempAndHumidityDataDto новые данные
+     * @return обновленная запись
+     */
+    Optional<TempAndHumidityDataDto> updateTempAndHumidityData(Long id, TempAndHumidityDataDto tempAndHumidityDataDto);
+    
+    /**
+     * Удаление записи данных
+     * @param id идентификатор записи
+     * @return true если запись удалена, false если не найдена
+     */
+    boolean deleteTempAndHumidityData(Long id);
+    
+    /**
+     * Получение всех данных температуры и влажности
+     * @return список всех записей
+     */
+    List<TempAndHumidityDataDto> getAllTempAndHumidityData();
+    
+    /**
+     * Получение данных по устройству
      * @param deviceId идентификатор устройства
-     * @return список данных
+     * @return список данных для устройства
      */
-    List<TempAndHumidityDataDto> getDataByDeviceId(Long deviceId);
+    List<TempAndHumidityDataDto> getTempAndHumidityDataByDevice(Long deviceId);
     
     /**
-     * Получить данные за период
+     * Получение данных по устройству отсортированных по времени
+     * @param deviceId идентификатор устройства
+     * @return список данных отсортированный по времени
+     */
+    List<TempAndHumidityDataDto> getTempAndHumidityDataByDeviceOrderByTime(Long deviceId);
+    
+    /**
+     * Получение последних данных для устройства
+     * @param deviceId идентификатор устройства
+     * @return последние данные или пустой Optional
+     */
+    Optional<TempAndHumidityDataDto> getLatestTempAndHumidityDataByDevice(Long deviceId);
+    
+    /**
+     * Получение данных в заданном временном диапазоне
      * @param deviceId идентификатор устройства
      * @param startTime начало периода
      * @param endTime конец периода
-     * @return список данных за период
+     * @return список данных в указанном диапазоне
      */
-    List<TempAndHumidityDataDto> getDataByPeriod(Long deviceId, LocalDateTime startTime, LocalDateTime endTime);
+    List<TempAndHumidityDataDto> getTempAndHumidityDataByDeviceAndTimeRange(Long deviceId, LocalDateTime startTime, LocalDateTime endTime);
     
     /**
-     * Получить последние данные устройства
-     * @param deviceId идентификатор устройства
-     * @param limit количество записей
-     * @return последние записи
+     * Получение данных с температурой больше указанного значения
+     * @param temperature минимальная температура
+     * @return список данных
      */
-    List<TempAndHumidityDataDto> getLatestData(Long deviceId, int limit);
+    List<TempAndHumidityDataDto> getTempAndHumidityDataByTemperatureGreaterThan(Float temperature);
     
     /**
-     * Обновить запись данных
-     * @param id идентификатор записи
-     * @param dataDto новые данные
-     * @return обновленная запись
+     * Получение данных с влажностью больше указанного значения
+     * @param humidity минимальная влажность
+     * @return список данных
      */
-    TempAndHumidityDataDto updateData(Long id, TempAndHumidityDataDto dataDto);
-    
-    /**
-     * Удалить запись данных
-     * @param id идентификатор записи
-     */
-    void deleteData(Long id);
-    
-    /**
-     * Получить данные с высокой температурой
-     * @param deviceId идентификатор устройства
-     * @param minTemperature минимальная температура
-     * @return записи с температурой выше указанной
-     */
-    List<TempAndHumidityDataDto> getHighTemperatureData(Long deviceId, Float minTemperature);
+    List<TempAndHumidityDataDto> getTempAndHumidityDataByHumidityGreaterThan(Float humidity);
 } 
