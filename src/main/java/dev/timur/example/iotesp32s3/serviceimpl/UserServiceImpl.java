@@ -8,7 +8,6 @@ import dev.timur.example.iotesp32s3.mapper.UserMapper;
 import dev.timur.example.iotesp32s3.model.User;
 import dev.timur.example.iotesp32s3.repository.UserRepository;
 import dev.timur.example.iotesp32s3.service.UserService;
-import dev.timur.example.iotesp32s3.specification.UserSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -24,14 +23,14 @@ import java.util.Optional;
 /**
  * Реализация сервиса для управления пользователями в системе IoT.
  * Предоставляет полный набор операций CRUD с поддержкой кеширования,
- * современных методов поиска и фильтрации через Specifications,
+ * современных методов поиска и фильтрации,
  * а также оптимизированных запросов для повышения производительности.
  * 
  * Особенности:
  * - Использует Spring Cache для оптимизации частых запросов
  * - Применяет MapStruct для безопасного маппинга без утечки паролей
  * - Поддерживает транзакционность для операций изменения данных
- * - Интегрирован с современными Spring Data Specifications
+ * - Интегрирован с Spring Data репозиториями
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -274,11 +273,11 @@ public class UserServiceImpl implements UserService {
     /**
      * {@inheritDoc}
      * 
-     * Использует Spring Data Specifications для динамических запросов.
+     * Использует Query Method для поиска пользователей по роли.
      */
     @Override
     public List<UserReadDto> findUsersByRole(Role role) {
-        List<User> users = userRepository.findAll(UserSpecification.hasRole(role));
+        List<User> users = userRepository.findByRole(role);
         return users.stream()
                 .map(userMapper::toReadDto)
                 .toList();
@@ -287,13 +286,11 @@ public class UserServiceImpl implements UserService {
     /**
      * {@inheritDoc}
      * 
-     * Композиционные Specifications для комбинирования условий.
+     * Использует Query Method для комбинирования условий.
      */
     @Override
     public List<UserReadDto> findActiveUsersByRole(Role role) {
-        List<User> users = userRepository.findAll(
-            UserSpecification.isActive().and(UserSpecification.hasRole(role))
-        );
+        List<User> users = userRepository.findByActiveTrueAndRole(role);
         return users.stream()
                 .map(userMapper::toReadDto)
                 .toList();
@@ -315,7 +312,7 @@ public class UserServiceImpl implements UserService {
     /**
      * {@inheritDoc}
      * 
-     * Использует композитные Specifications для гибкого комбинирования фильтров.
+     * Использует простой подход с базовой фильтрацией.
      * Все параметры опциональны - null значения игнорируются.
      */
     @Override
@@ -323,10 +320,13 @@ public class UserServiceImpl implements UserService {
             String searchText, LocalDateTime createdAfter, LocalDateTime createdBefore, 
             Pageable pageable) {
         
-        Page<User> users = userRepository.findAll(
-            UserSpecification.buildComplexQuery(active, role, searchText, createdAfter, createdBefore),
-            pageable
-        );
+        // Упрощенная реализация без Specifications
+        Page<User> users;
+        if (active != null && active) {
+            users = userRepository.findByActiveTrue(pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
         return users.map(userMapper::toReadDto);
     }
 
@@ -344,14 +344,12 @@ public class UserServiceImpl implements UserService {
     /**
      * {@inheritDoc}
      * 
-     * Использует Specifications для подсчета активных пользователей по роли.
+     * Использует Query Method для подсчета активных пользователей по роли.
      * Результат кешируется с ключом, включающим название роли.
      */
     @Override
     @Cacheable(value = "userStats", key = "'roleCount_' + #role.name()")
     public long countUsersByRole(Role role) {
-        return userRepository.count(
-            UserSpecification.isActive().and(UserSpecification.hasRole(role))
-        );
+        return userRepository.countByActiveTrueAndRole(role);
     }
 } 

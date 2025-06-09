@@ -1,6 +1,7 @@
 package dev.timur.example.iotesp32s3.repository;
 
 import dev.timur.example.iotesp32s3.model.User;
+import dev.timur.example.iotesp32s3.enums.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -69,6 +70,30 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * @return список активных пользователей, созданных после указанной даты
      */
     List<User> findByActiveTrueAndCreatedAtAfter(LocalDateTime date);
+    
+    /**
+     * Поиск пользователей по роли.
+     * 
+     * @param role роль пользователя
+     * @return список пользователей с указанной ролью
+     */
+    List<User> findByRole(Role role);
+    
+    /**
+     * Поиск активных пользователей по роли.
+     * 
+     * @param role роль пользователя
+     * @return список активных пользователей с указанной ролью
+     */
+    List<User> findByActiveTrueAndRole(Role role);
+    
+    /**
+     * Подсчет количества активных пользователей с указанной ролью.
+     * 
+     * @param role роль пользователя
+     * @return количество активных пользователей с указанной ролью
+     */
+    long countByActiveTrueAndRole(Role role);
     
     // Составные запросы
     

@@ -7,15 +7,15 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@EqualsAndHashCode()
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable = false)
@@ -42,33 +42,7 @@ public class User {
     
     @Column(name="active", nullable = false)
     private Boolean active = true;
-
-    @Column(name="created_at",nullable = false)
-    private LocalDateTime createdAt;
-    @Column(name="removed_at")
-    private LocalDateTime removedAt;
-    @Column(name="modified_at")
-    private LocalDateTime modifiedAt;
     
     @Column(name="last_login")
     private LocalDateTime lastLogin;
-    
-    /** Устройства, принадлежащие пользователю - связь One-to-Many с Device */
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Device> devices;
-    
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    public void onUpdate() {
-        this.modifiedAt = LocalDateTime.now();
-    }
-    //
-    @PreRemove
-    public void toRemove() {
-        this.removedAt = LocalDateTime.now();
-    }
 } 
