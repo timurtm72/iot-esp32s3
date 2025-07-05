@@ -64,4 +64,11 @@ public interface DeviceMapper {
      * @return список сущностей устройств
      */
     List<Device> toEntityList(List<DeviceDto> dtoList);
+
+    // Дополнительные маппинги вложенных типов
+    dev.timur.example.iotesp32s3.dto.LocationDto toDto(dev.timur.example.iotesp32s3.model.Location location);
+    dev.timur.example.iotesp32s3.model.Location toEntity(dev.timur.example.iotesp32s3.dto.LocationDto locationDto);
+
+    dev.timur.example.iotesp32s3.dto.WiFiParametersDto toDto(dev.timur.example.iotesp32s3.model.WiFiParameters params);
+    dev.timur.example.iotesp32s3.model.WiFiParameters toEntity(dev.timur.example.iotesp32s3.dto.WiFiParametersDto paramsDto);
 } 

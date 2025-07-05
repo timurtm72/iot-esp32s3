@@ -167,15 +167,14 @@ public class DeviceServiceImpl implements DeviceService {
     }
     
     /**
-     * Получение устройств по местоположению
-     * @param location местоположение
-     * @return список устройств в указанном местоположении
+     * Получение устройств по городу
+     * @param city город
+     * @return список устройств
      */
     @Override
-    public List<DeviceDto> getDevicesByLocation(String location) {
-        log.debug("Получение устройств по местоположению: {}", location);
-        
-        List<Device> devices = deviceRepository.findByLocationAndRemovedAtIsNull(location);
+    public List<DeviceDto> getDevicesByCity(String city) {
+        log.debug("Получение устройств по городу: {}", city);
+        List<Device> devices = deviceRepository.findByLocation_CityAndRemovedAtIsNull(city);
         return deviceMapper.toDtoList(devices);
     }
     

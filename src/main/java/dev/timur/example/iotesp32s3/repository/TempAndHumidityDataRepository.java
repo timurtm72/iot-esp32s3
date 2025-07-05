@@ -57,4 +57,10 @@ public interface TempAndHumidityDataRepository extends JpaRepository<TempAndHumi
      * @return список данных
      */
     List<TempAndHumidityData> findByHumidityGreaterThan(Float humidity);
+
+    /**
+     * Удалить данные старше указанного времени
+     * @param threshold временной порог
+     */
+    void deleteByTimestampBefore(LocalDateTime threshold);
 } 

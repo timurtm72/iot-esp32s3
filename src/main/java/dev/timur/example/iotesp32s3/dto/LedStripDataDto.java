@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * DTO для представления данных управления LED лентой
@@ -17,21 +20,29 @@ public class LedStripDataDto {
     /** Уникальный идентификатор записи данных */
     private Long id;
     
-    /** Значение красного цвета (0-255) */
+    @Min(0)
+    @Max(255)
+    @NotNull
     private Integer redColor;
     
-    /** Значение зеленого цвета (0-255) */
+    @Min(0)
+    @Max(255)
+    @NotNull
     private Integer greenColor;
     
-    /** Значение синего цвета (0-255) */
+    @Min(0)
+    @Max(255)
+    @NotNull
     private Integer blueColor;
     
-    /** Яркость LED ленты (0-255) */
+    @Min(0)
+    @Max(255)
+    @NotNull
     private Integer brightness;
     
     /** Время установки значений */
     private LocalDateTime timestamp;
     
-    /** Идентификатор связанного устройства */
+    @NotNull
     private Long deviceId;
 } 

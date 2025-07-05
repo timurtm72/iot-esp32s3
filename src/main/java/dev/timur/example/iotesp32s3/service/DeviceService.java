@@ -61,11 +61,11 @@ public interface DeviceService {
     List<DeviceDto> getDevicesByOwner(Long ownerId);
     
     /**
-     * Получение устройств по местоположению
-     * @param location местоположение
-     * @return список устройств в указанном местоположении
+     * Получение устройств по городу
+     * @param city город
+     * @return список устройств
      */
-    List<DeviceDto> getDevicesByLocation(String location);
+    List<DeviceDto> getDevicesByCity(String city);
     
     /**
      * Получение устройств созданных после указанной даты

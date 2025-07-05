@@ -35,11 +35,11 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByOwnerIdAndRemovedAtIsNull(Long ownerId);
     
     /**
-     * Поиск устройств по местоположению среди активных устройств
-     * @param location местоположение устройства
-     * @return список устройств в указанном местоположении
+     * Поиск устройств по городу среди активных устройств
+     * @param city город
+     * @return список устройств
      */
-    List<Device> findByLocationAndRemovedAtIsNull(String location);
+    List<Device> findByLocation_CityAndRemovedAtIsNull(String city);
     
     /**
      * Поиск устройств созданных после указанной даты

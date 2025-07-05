@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import dev.timur.example.iotesp32s3.enums.DeviceStatus;
 
 /**
  * Сущность IoT устройства
@@ -34,8 +35,17 @@ public class Device extends BaseEntity {
     private String description;
     
     /** Местоположение устройства */
-    @Column(name="location", length = 500)
-    private String location;
+    @Embedded
+    private Location location;
+
+    /** Параметры WiFi устройства */
+    @Embedded
+    private WiFiParameters wifiParameters;
+
+    /** Статус устройства */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private DeviceStatus status = DeviceStatus.OFFLINE;
     
     /** Данные LED ленты */
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

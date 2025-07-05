@@ -50,4 +50,10 @@ public interface LedStripDataRepository extends JpaRepository<LedStripData, Long
      * @return список данных LED ленты
      */
     List<LedStripData> findByBrightnessGreaterThan(Integer brightness);
+
+    /**
+     * Удалить данные старше указанного времени
+     * @param threshold временной порог
+     */
+    void deleteByTimestampBefore(LocalDateTime threshold);
 } 

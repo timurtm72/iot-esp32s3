@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * DTO для представления данных пользователя с паролем
@@ -20,12 +23,18 @@ public class UserDto {
     private Long id;
     
     /** Имя пользователя */
+    @NotBlank
+    @Size(min = 3, max = 50)
     private String username;
     
     /** Электронная почта пользователя */
+    @Email
+    @NotBlank
     private String email;
 
     /** Пароль пользователя */
+    @NotBlank
+    @Size(min = 6, max = 255)
     private String password;
     
     /** Имя */
